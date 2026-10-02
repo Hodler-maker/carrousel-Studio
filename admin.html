@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrousel Studio — Admin</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5efe4;
+    --bg-2:#ffffff;
+    --orange:#ff7a2f;
+    --orange-deep:#ff5a1f;
+    --amber:#ffb547;
+    --ink:#19140d;
+    --glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.88);
+    --border:rgba(25,20,13,0.09);
+    --border-soft:rgba(25,20,13,0.05);
+    --text:#1c160f;
+    --text-dim:#7c7060;
+    --text-faint:#ada08c;
+    --green:#2f9e5c;
+    --red:#b83f28;
+    --radius:16px;
+    --font-display:'Inter', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; position:relative; overflow-x:hidden;}
+  .orb{position:fixed; border-radius:50%; filter:blur(100px); opacity:0.35; z-index:0; pointer-events:none;}
+  .orb-1{width:520px; height:520px; background:var(--orange); top:-220px; left:-160px;}
+  .orb-2{width:440px; height:440px; background:var(--amber); bottom:-190px; right:-140px; opacity:0.3;}
+.wrap{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:32px 24px 100px;}
+header{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:32px;}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg, var(--orange-deep), var(--amber)); flex-shrink:0;}
+.brand-text h1{font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--ink);}
+.brand-text span{font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; color:var(--text-faint);}
+.home-link{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--ink); background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px; text-decoration:none;}
+.home-link:hover{border-color:var(--orange-deep); color:var(--orange-deep);}
+.auth-widget{display:flex; align-items:center; gap:8px;}
+.auth-btn{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--ink); background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px; cursor:pointer;}
+.auth-btn:hover{border-color:var(--orange-deep); color:var(--orange-deep);}
+.auth-user{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); background:var(--glass-strong); border:1px solid var(--border); padding:8px 12px; border-radius:12px;}
+.auth-user b{color:var(--ink); font-weight:700;}
+.auth-user .auth-signout{font-family:inherit; font-size:11px; color:var(--orange-deep); background:none; border:none; cursor:pointer; font-weight:600; padding:0;}
+.auth-user .auth-signout:hover{text-decoration:underline;}
+.gate{max-width:420px; margin:80px auto; text-align:center; background:var(--glass-strong); border:1px solid var(--border); border-radius:var(--radius); padding:40px 28px;}
+.gate h2{font-family:var(--font-display); font-size:19px; margin-bottom:10px; color:var(--ink);}
+.gate p{font-size:13.5px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
+.gate button{font-family:var(--font-mono); font-size:13px; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--orange-deep), var(--amber)); border:none; padding:11px 20px; border-radius:11px; cursor:pointer;}
+.panel{background:var(--glass-strong); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px;}
+.panel h2{font-family:var(--font-display); font-size:16px; color:var(--ink); margin-bottom:4px;}
+.panel .panel-sub{font-size:12.5px; color:var(--text-dim); margin-bottom:18px;}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--border);}
+tbody td{padding:10px 10px; border-bottom:1px solid var(--border-soft); vertical-align:middle;}
+tbody tr:hover{background:rgba(255,122,47,0.04);}
+.cell-email{font-weight:600; color:var(--ink);}
+.cell-sub{font-size:11px; color:var(--text-faint); font-family:var(--font-mono);}
+select.plan-select-admin{font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--ink); background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:6px 8px; cursor:pointer;}
+.tag{display:inline-block; font-family:var(--font-mono); font-size:10.5px; padding:3px 8px; border-radius:100px; border:1px solid var(--border); color:var(--text-dim);}
+.tag.active{color:var(--green); border-color:rgba(47,158,92,0.35); background:rgba(47,158,92,0.08);}
+.tag.inactive{color:var(--red); border-color:rgba(184,63,40,0.3); background:rgba(184,63,40,0.06);}
+.empty-row td{text-align:center; color:var(--text-faint); padding:24px 10px; font-size:12.5px;}
+.promo-form{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-top:18px; padding-top:18px; border-top:1px solid var(--border);}
+.field{display:flex; flex-direction:column; gap:5px;}
+.field label{font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint);}
+.field input, .field select{font-family:var(--font-mono); font-size:12.5px; color:var(--ink); background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; min-width:120px;}
+.promo-form button{font-family:var(--font-mono); font-size:12.5px; font-weight:700; color:#fff; background:var(--orange-deep); border:none; padding:9px 16px; border-radius:9px; cursor:pointer; height:36px;}
+.promo-form button:hover{filter:brightness(1.06);}
+.row-actions{display:flex; gap:8px; align-items:center;}
+.link-btn{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); background:none; border:none; cursor:pointer; font-weight:600; padding:0;}
+.link-btn:hover{text-decoration:underline;}
+.link-btn.danger{color:var(--red);}
+.refresh-btn{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--ink); background:var(--bg-2); border:1px solid var(--border); padding:7px 12px; border-radius:9px; cursor:pointer;}
+.refresh-btn:hover{border-color:var(--orange-deep); color:var(--orange-deep);}
+.panel-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.cs-toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);}
+.cs-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+@media (max-width:640px){
+table, thead, tbody, tr, th, td{display:block;}
+thead{display:none;}
+tbody tr{border-bottom:1px solid var(--border); padding:10px 0; margin-bottom:6px;}
+tbody td{border:none; padding:4px 0;}
+tbody td::before{content:attr(data-label); display:block; font-family:var(--font-mono); font-size:10px; color:var(--text-faint); margin-bottom:2px;}
+}
+</style>
+</head>
+<body>
+<script type="module" src="firebase-shared.js"></script>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="cs-toast" id="cs-toast"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <h1>Carrousel Studio</h1>
+        <span>BACK-OFFICE ADMIN</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <a class="home-link" href="accueil.html">← Retour au site</a>
+      <div class="auth-widget" id="auth-widget">
+        <button class="auth-btn" onclick="handleAuthClick()">Se connecter</button>
+      </div>
+    </div>
+  </header>
+<div id="gate" class="gate" style="display:none;">
+    <h2>Accès réservé</h2>
+    <p>Cette page est réservée à l'administrateur du site. Connecte-toi avec le compte admin pour continuer.</p>
+    <button onclick="handleAuthClick()">Se connecter</button>
+  </div>
+<div id="admin-content" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Utilisateurs</h2>
+          <div class="panel-sub" id="users-count">Chargement…</div>
+        </div>
+        <button class="refresh-btn" onclick="loadUsers()">↻ Rafraîchir</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Email</th><th>Forfait</th><th>Origine</th><th>Code promo</th><th>Créé le</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr class="empty-row"><td colspan="6">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Codes promo</h2>
+          <div class="panel-sub" id="promo-count">Chargement…</div>
+        </div>
+        <button class="refresh-btn" onclick="loadPromoCodes()">↻ Rafraîchir</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Code</th><th>Forfait accordé</th><th>Utilisations</th><th>Expire le</th><th>Statut</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="promo-tbody">
+          <tr class="empty-row"><td colspan="6">Chargement…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="promo-form">
+        <div class="field">
+          <label for="promo-code-input">Code</label>
+          <input type="text" id="promo-code-input" placeholder="EX: LANCEMENT30" style="text-transform:uppercase; min-width:160px;">
+        </div>
+        <div class="field">
+          <label for="promo-plan-select">Forfait accordé</label>
+          <select id="promo-plan-select">
+            <option value="genesis">Freemium</option>
+            <option value="node">Basique</option>
+            <option value="validator" selected>Premium</option>
+            <option value="satoshi">Premium+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="promo-max-uses">Utilisations max (optionnel)</label>
+          <input type="number" id="promo-max-uses" min="1" placeholder="illimité" style="min-width:110px;">
+        </div>
+        <div class="field">
+          <label for="promo-expiry-days">Expire dans (jours, optionnel)</label>
+          <input type="number" id="promo-expiry-days" min="1" placeholder="jamais" style="min-width:110px;">
+        </div>
+        <button onclick="handleCreatePromo()">+ Créer le code</button>
+      </div>
+    </div>
+
+</div>
+</div>
+<script>
+const PLAN_NAMES = { genesis:'Freemium', node:'Basique', validator:'Premium', satoshi:'Premium+' };
+const PLAN_SOURCE_LABELS = { default:'par défaut', self:'auto-sélection', admin:'modifié par admin', promo:'code promo' };
+
+let csUser = null;
+
+function showToast(msg){
+  const t = document.getElementById('cs-toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._csToastTimer);
+  window._csToastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Pour insérer une valeur dans un attribut onclick="...('valeur')" sans
+// risquer qu'elle casse hors de la chaîne JS (ex: un code contenant un ').
+function escapeJsString(str){
+  return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function renderAuthWidget(){
+  const el = document.getElementById('auth-widget');
+  if(!el) return;
+  if(!csUser){
+    el.innerHTML = '<button class="auth-btn" onclick="handleAuthClick()">Se connecter</button>';
+    return;
+  }
+  el.innerHTML = `<span class="auth-user"><b>${escapeHtml(csUser.email)}</b><button class="auth-signout" onclick="handleSignOut()">Déconnexion</button></span>`;
+}
+
+async function handleAuthClick(){
+  const email = window.prompt("Email admin :");
+  if(!email) return;
+  const password = window.prompt("Ton mot de passe (6 caractères min.) :");
+  if(!password) return;
+  try{
+    try{
+      await window.CS.signInWithPassword(email, password);
+    }catch(err){
+      if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+        try{
+          await window.CS.signUpWithPassword(email, password);
+        }catch(signUpErr){
+          if(signUpErr.code === 'auth/email-already-in-use'){
+            throw new Error('Mot de passe incorrect.');
+          }
+          throw signUpErr;
+        }
+      }else{
+        throw err;
+      }
+    }
+    showToast('Connecté ✓');
+  }catch(err){
+    console.error(err);
+    showToast(err.message || "Connexion impossible, réessaie.");
+  }
+}
+
+async function handleSignOut(){
+  try{
+    await window.CS.signOutUser();
+    showToast('Déconnecté.');
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
+  }catch(err){
+    console.error(err);
+  }
+}
+
+function formatDate(ts){
+  if(!ts || !ts.toDate) return '—';
+  try{
+    return ts.toDate().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }catch(err){
+    return '—';
+  }
+}
+
+async function loadUsers(){
+  const tbody = document.getElementById('users-tbody');
+  const countEl = document.getElementById('users-count');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Chargement…</td></tr>';
+  try{
+    const users = await window.CS.adminListUsers();
+    users.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    countEl.textContent = `${users.length} compte${users.length > 1 ? 's' : ''}`;
+    if(users.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun utilisateur pour l’instant.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td data-label="Email" class="cell-email">${escapeHtml(u.email) || '—'}</td>
+        <td data-label="Forfait">
+          <select class="plan-select-admin" onchange="handleChangeUserPlan('${escapeJsString(u.uid)}', this.value)">
+            ${Object.entries(PLAN_NAMES).map(([id, name]) => `<option value="${id}" ${u.planId === id ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+          </select>
+        </td>
+        <td data-label="Origine" class="cell-sub">${escapeHtml(PLAN_SOURCE_LABELS[u.planSource] || u.planSource) || '—'}</td>
+        <td data-label="Code promo" class="cell-sub">${escapeHtml(u.promoCode) || '—'}</td>
+        <td data-label="Créé le" class="cell-sub">${formatDate(u.createdAt)}</td>
+        <td data-label="Actions" class="row-actions">
+          <button class="link-btn" onclick="handleDeleteUser('${escapeJsString(u.uid)}', '${escapeJsString(u.email || '')}')">Supprimer</button>
+        </td>
+      </tr>
+    `).join('');
+  }catch(err){
+    console.error(err);
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Erreur de chargement — vérifie les règles Firestore.</td></tr>';
+  }
+}
+
+async function handleChangeUserPlan(uid, planId){
+  try{
+    await window.CS.adminSetUserPlan(uid, planId);
+    showToast(`Forfait mis à jour : ${PLAN_NAMES[planId]}`);
+    loadUsers();
+  }catch(err){
+    console.error(err);
+    showToast("Impossible de modifier ce forfait.");
+  }
+}
+
+async function handleDeleteUser(uid, email){
+  // Ceci supprime uniquement la fiche Firestore (forfait/quota) — pas le
+  // compte de connexion Firebase Auth. Si la personne se reconnecte, un
+  // nouveau profil "Freemium par défaut" sera recréé automatiquement.
+  if(!window.confirm(`Supprimer la fiche de ${email || 'cet utilisateur'} ? Le compte de connexion n'est pas supprimé, seulement son forfait/historique.`)) return;
+  try{
+    await window.CS.adminDeleteUser(uid);
+    showToast('Fiche supprimée.');
+    loadUsers();
+  }catch(err){
+    console.error(err);
+    showToast("Impossible de supprimer cette fiche.");
+  }
+}
+
+async function loadPromoCodes(){
+  const tbody = document.getElementById('promo-tbody');
+  const countEl = document.getElementById('promo-count');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Chargement…</td></tr>';
+  try{
+    const codes = await window.CS.adminListPromoCodes();
+    codes.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    countEl.textContent = `${codes.length} code${codes.length > 1 ? 's' : ''}`;
+    if(codes.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun code promo pour l’instant.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = codes.map(c => {
+      const isExpired = c.expiresAt && c.expiresAt.toDate && c.expiresAt.toDate() < new Date();
+      const statusLabel = isExpired ? 'Expiré' : (c.active !== false ? 'Actif' : 'Désactivé');
+      const statusClass = isExpired ? 'inactive' : (c.active !== false ? 'active' : 'inactive');
+      return `
+      <tr>
+        <td data-label="Code" class="cell-email">${escapeHtml(c.code)}</td>
+        <td data-label="Forfait accordé">${escapeHtml(PLAN_NAMES[c.planId] || c.planId)}</td>
+        <td data-label="Utilisations" class="cell-sub">${c.usedCount || 0}${c.maxUses ? ' / ' + c.maxUses : ' (illimité)'}</td>
+        <td data-label="Expire le" class="cell-sub">${formatDate(c.expiresAt)}</td>
+        <td data-label="Statut"><span class="tag ${statusClass}">${statusLabel}</span></td>
+        <td data-label="Actions" class="row-actions">
+          <button class="link-btn" onclick="handleTogglePromo('${escapeJsString(c.code)}', ${c.active === false})">${c.active === false ? 'Réactiver' : 'Désactiver'}</button>
+        </td>
+      </tr>
+    `;
+    }).join('');
+  }catch(err){
+    console.error(err);
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Erreur de chargement — vérifie les règles Firestore.</td></tr>';
+  }
+}
+
+async function handleTogglePromo(code, nextActive){
+  try{
+    await window.CS.adminSetPromoActive(code, nextActive);
+    showToast(nextActive ? 'Code réactivé.' : 'Code désactivé.');
+    loadPromoCodes();
+  }catch(err){
+    console.error(err);
+    showToast("Impossible de modifier ce code.");
+  }
+}
+
+async function handleCreatePromo(){
+  const codeInput = document.getElementById('promo-code-input');
+  const planSelect = document.getElementById('promo-plan-select');
+  const maxUsesInput = document.getElementById('promo-max-uses');
+  const expiryDaysInput = document.getElementById('promo-expiry-days');
+  const code = codeInput.value.trim();
+  if(!code){ showToast('Donne un nom de code.'); return; }
+  const expiryDays = expiryDaysInput.value ? parseInt(expiryDaysInput.value, 10) : null;
+  const expiresAt = expiryDays ? new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000) : null;
+  try{
+    const created = await window.CS.adminCreatePromoCode(code, {
+      planId: planSelect.value,
+      maxUses: maxUsesInput.value ? parseInt(maxUsesInput.value, 10) : null,
+      expiresAt,
+    });
+    codeInput.value = '';
+    maxUsesInput.value = '';
+    expiryDaysInput.value = '';
+    showToast(`Code ${created} créé ✓`);
+    loadPromoCodes();
+  }catch(err){
+    console.error(err);
+    showToast("Impossible de créer ce code (existe peut-être déjà).");
+  }
+}
+
+function showGate(){
+  document.getElementById('gate').style.display = 'block';
+  document.getElementById('admin-content').style.display = 'none';
+}
+
+function showAdminContent(){
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('admin-content').style.display = 'block';
+  loadUsers();
+  loadPromoCodes();
+}
+
+function initAuth(){
+  window.CS.completeSignInIfLink().catch(err => {
+    console.error(err);
+    showToast('La connexion a échoué, redemande un lien.');
+  });
+
+  window.CS.onAuthChange((user) => {
+    csUser = user;
+    renderAuthWidget();
+    if(user && window.CS.isAdmin(user)){
+      showAdminContent();
+    }else{
+      showGate();
+      if(user && !window.CS.isAdmin(user)){
+        showToast("Ce compte n'a pas accès au back-office admin.");
+      }
+    }
+  });
+}
+
+if(window.CS){ initAuth(); } else { window.addEventListener('cs:ready', initAuth, { once:true }); }
+</script>
+</body>
+</html>

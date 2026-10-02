@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Éditeur de présentations — Carrousel Studio</title>
+  <meta name="description" content="Éditeur local et privé de présentations pour Carrousel Studio.">
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --panel: rgba(255,255,255,.82);
+      --panel-strong: #fffdf9;
+      --ink: #19140d;
+      --muted: #746958;
+      --line: rgba(25,20,13,.12);
+      --orange: #ff7a2f;
+      --orange-dark: #e85f1f;
+      --yellow: #ffc928;
+      --navy: #15233a;
+      --danger: #b42318;
+      --shadow: 0 18px 45px rgba(72,49,23,.12);
+      --radius: 18px;
+      --ease: cubic-bezier(.23,1,.32,1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 0 0, rgba(255,191,84,.35), transparent 30%),
+        radial-gradient(circle at 100% 100%, rgba(255,122,47,.17), transparent 32%),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid rgba(255,122,47,.5);
+      outline-offset: 2px;
+    }
+    .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px clamp(14px, 3vw, 32px);
+      background: rgba(255,253,249,.88);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #172239 0 48%, var(--orange) 49% 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+    .brand strong { display: block; font-size: 15px; letter-spacing: -.02em; }
+    .brand span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .top-actions, .button-row, .toolbar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .back-link { text-decoration: none; }
+    .top-actions { justify-content: flex-end; }
+    .btn, .icon-btn {
+      border: 1px solid var(--line); border-radius: 11px; background: var(--panel-strong); color: var(--ink);
+      min-height: 38px; padding: 8px 12px; font-weight: 700; font-size: 13px;
+      transition: transform 160ms var(--ease), border-color 160ms var(--ease), background 160ms var(--ease), color 160ms var(--ease);
+    }
+    .btn:hover, .icon-btn:hover { border-color: rgba(255,122,47,.55); transform: translateY(-1px); }
+    .btn:active, .icon-btn:active { transform: scale(.97); }
+    .btn.primary { border-color: var(--orange); background: var(--orange); color: #fff; }
+    .btn.primary:hover { background: var(--orange-dark); }
+    .btn.dark { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .btn.subtle { background: rgba(255,255,255,.44); }
+    .btn.danger { color: var(--danger); }
+    .icon-btn { width: 38px; padding: 7px; display: inline-grid; place-items: center; }
+    .status { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #36a269; }
+    .status[data-state="loading"]::before { background: #d58b00; }
+    .status[data-state="error"]::before { background: var(--danger); }
+    .status[data-state="success"]::before { background: #2d9d65; }
+    .workspace { display: grid; grid-template-columns: 218px minmax(0, 1fr) 255px; gap: 16px; width: min(1500px, 100%); margin: 0 auto; padding: 18px clamp(12px, 2.5vw, 28px) 28px; flex: 1; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+    .sidebar, .inspector { padding: 15px; align-self: start; }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .panel-heading h2 { margin: 0; font-size: 14px; letter-spacing: -.01em; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; line-height: 1.45; }
+    .auto-generator { margin: 13px 0 15px; padding: 10px; border: 1px solid rgba(255,122,47,.26); border-radius: 13px; background: rgba(255,249,238,.72); }
+    .auto-generator summary { cursor: pointer; color: var(--orange-dark); font-weight: 800; font-size: 12px; }
+    .auto-generator[open] summary { margin-bottom: 10px; }
+    .auto-generator .field { margin-bottom: 10px; }
+    .auto-generator .btn { width: 100%; }
+    .slide-list { display: grid; gap: 9px; max-height: calc(100vh - 205px); overflow: auto; padding: 2px; }
+    .slide-thumb { position: relative; min-height: 82px; padding: 8px; overflow: hidden; text-align: left; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .slide-thumb[aria-current="true"] { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,122,47,.18); }
+    .slide-thumb-preview { position: relative; height: 52px; overflow: hidden; border-radius: 8px; background: #15233a; }
+    .slide-thumb-preview span { position: absolute; left: 8px; right: 7px; top: 9px; color: #fff; font-size: 8px; font-weight: 800; line-height: 1.1; }
+    .slide-thumb-meta { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-top: 7px; color: var(--muted); font-size: 11px; }
+    .slide-number { font-weight: 800; color: var(--ink); }
+    .empty-state { padding: 22px 10px; text-align: center; color: var(--muted); }
+    .empty-state strong { display: block; margin-bottom: 6px; color: var(--ink); }
+    .stage-panel { display: flex; min-width: 0; flex-direction: column; padding: 15px; }
+    .stage-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+    .stage-toolbar .hint { margin: 0; color: var(--muted); font-size: 12px; }
+    .tool-btn[aria-pressed="true"] { border-color: var(--orange); background: rgba(255,122,47,.12); color: var(--orange-dark); }
+    .surface-wrap { display: grid; place-items: center; min-height: 0; padding: clamp(16px, 4vw, 54px) 0; }
+    .surface-frame { position: relative; width: min(100%, 960px); aspect-ratio: 16 / 9; }
+    .design-surface { position: absolute; left: 0; top: 0; width: 960px; height: 540px; transform-origin: top left; overflow: hidden; border-radius: 13px; box-shadow: 0 24px 70px rgba(42,29,10,.22); user-select: none; }
+    .design-surface::after { content: ""; position: absolute; inset: 0; pointer-events: none; border: 1px solid rgba(255,255,255,.18); border-radius: inherit; }
+    .object { position: absolute; display: flex; align-items: center; justify-content: center; overflow: visible; border: 1px solid transparent; cursor: move; white-space: pre-wrap; word-break: break-word; }
+    .object.text { justify-content: flex-start; align-items: flex-start; padding: 4px 7px; line-height: 1.12; font-weight: 800; }
+    .object.rect { border-radius: 10px; }
+    .object.image { padding: 0; background: rgba(255,255,255,.3); }
+    .object.image img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; border-radius: inherit; }
+    .object.image .image-placeholder { display: grid; width: 100%; height: 100%; place-items: center; padding: 14px; color: var(--muted); text-align: center; font-size: 13px; }
+    .emoji-tools { display: inline-flex; align-items: center; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.5); }
+    .emoji-btn { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; font-size: 19px; line-height: 1; transition: transform 160ms var(--ease), background 160ms var(--ease); }
+    .emoji-btn:hover { background: rgba(255,201,40,.22); transform: translateY(-1px) scale(1.05); }
+    .emoji-btn:active { transform: scale(.95); }
+    .object.selected { border: 2px solid var(--orange); box-shadow: 0 0 0 3px rgba(255,122,47,.22); }
+    .object .resize-handle { position: absolute; width: 13px; height: 13px; right: -7px; bottom: -7px; border: 2px solid #fff; border-radius: 50%; background: var(--orange); cursor: nwse-resize; }
+    .object[contenteditable="true"] { cursor: text; outline: none; }
+    .connector-layer { position: absolute; inset: 0; width: 960px; height: 540px; pointer-events: none; }
+    .connector-layer line { stroke: #ff7a2f; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); opacity: .9; }
+    .connector-layer line.selected { stroke: #15233a; stroke-width: 6; }
+    .surface-empty { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(25,20,13,.58); font-weight: 700; pointer-events: none; }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    .field label { font-size: 12px; font-weight: 800; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 37px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.78); color: var(--ink); }
+    .field textarea { min-height: 85px; resize: vertical; }
+    .field input[type="color"] { padding: 3px; height: 37px; }
+    .inspector-section { padding-bottom: 13px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .inspector-section:last-child { border-bottom: 0; margin-bottom: 0; }
+    .inspector-section h3 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .check-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 50; max-width: min(360px, calc(100vw - 40px)); padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffdf9; box-shadow: var(--shadow); font-size: 13px; transform: translateY(14px); opacity: 0; pointer-events: none; transition: opacity 180ms var(--ease), transform 180ms var(--ease); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { color: var(--danger); border-color: rgba(180,35,24,.25); }
+    .hidden { display: none !important; }
+    .mobile-only { display: none; }
+    @media (max-width: 1120px) { .workspace { grid-template-columns: 190px minmax(0,1fr); } .inspector { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 15px; } .inspector .inspector-section { margin: 0; } }
+    @media (max-width: 760px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .top-actions .back-link { width: 100%; text-align: center; }
+      .workspace { display: flex; flex-direction: column; padding: 12px; }
+      .sidebar { order: 2; }
+      .stage-panel { order: 1; padding: 11px; }
+      .inspector { order: 3; display: block; }
+      .slide-list { display: flex; max-height: none; overflow-x: auto; padding-bottom: 5px; }
+      .slide-thumb { flex: 0 0 142px; }
+      .stage-toolbar { align-items: flex-start; flex-direction: column; }
+      .stage-toolbar .toolbar-group { width: 100%; }
+      .surface-wrap { padding: 24px 0 18px; }
+      .btn, .icon-btn { min-height: 42px; }
+      .mobile-only { display: inline; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+    /* Petit menu de statut de forfait (badge + compteurs) */
+    .plan-menu{position:relative;}
+    .plan-menu-btn{display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg, #ff5a1f, #ff7a2f 55%, #ffb547); border:none; padding:8px 12px; border-radius:100px; cursor:pointer; box-shadow:0 6px 16px rgba(255,122,47,.3);}
+    .plan-menu-btn .chev{font-size:9px; transition:transform .15s ease;}
+    .plan-menu.is-open .plan-menu-btn .chev{transform:rotate(180deg);}
+    .plan-menu-panel{position:absolute; top:calc(100% + 8px); right:0; width:230px; background:#fff; border:1px solid rgba(25,20,13,.1); border-radius:14px; box-shadow:0 16px 40px rgba(25,20,13,.18); padding:14px; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease, visibility .15s;}
+    .plan-menu.is-open .plan-menu-panel{opacity:1; visibility:visible; transform:translateY(0);}
+    .plan-menu-row{margin-bottom:10px;}
+    .plan-menu-row:last-child{margin-bottom:0;}
+    .plan-menu-row .row-label{display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#19140d; margin-bottom:5px;}
+    .plan-menu-row .row-count{font-weight:400; color:#7c7060;}
+    .plan-menu-bar{height:5px; background:rgba(25,20,13,.08); border-radius:100px; overflow:hidden;}
+    .plan-menu-bar-fill{height:100%; background:linear-gradient(90deg, #ff5a1f, #ffb547); border-radius:100px;}
+    .plan-menu-bar-fill.is-full{background:#d94b3a;}
+    .plan-menu-row.is-locked .row-label{color:#ada08c;}
+    .plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#7c7060; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
+    .plan-menu-link:hover{color:#ff5a1f;}
+  </style>
+</head>
+<body>
+  <script type="module" src="firebase-shared.js"></script>
+<div id="cs-auth-bar" style="position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+  <div id="cs-plan-menu"></div>
+  <div id="cs-auth-widget"></div>
+</div>
+<div id="cs-toast" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#19140d; color:#fff; font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1000; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);"></div>
+<script>
+function csShowToast(msg){
+  const t = document.getElementById('cs-toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._csAuthToastTimer);
+  window._csAuthToastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 3200);
+}
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function csRenderAuthWidget(user){
+  const el = document.getElementById('cs-auth-widget');
+  if(!el) return;
+  if(!user){
+    el.innerHTML = '<button onclick="csHandleAuthClick()" style="font-family:inherit; font-size:11.5px; font-weight:700; color:#19140d; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:9px 14px; border-radius:12px; cursor:pointer;">Se connecter</button>';
+    return;
+  }
+  const shortEmail = user.email.length > 22 ? user.email.slice(0, 19) + '…' : user.email;
+  el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#7c7060; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${escapeHtml(shortEmail)}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
+}
+async function csHandleAuthClick(){
+  const email = window.prompt("Ton email :");
+  if(!email) return;
+  const password = window.prompt("Ton mot de passe (6 caractères min.) :");
+  if(!password) return;
+  try{
+    try{
+      await window.CS.signInWithPassword(email, password);
+    }catch(err){
+      if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+        try{
+          await window.CS.signUpWithPassword(email, password);
+        }catch(signUpErr){
+          if(signUpErr.code === 'auth/email-already-in-use'){
+            throw new Error('Mot de passe incorrect.');
+          }
+          throw signUpErr;
+        }
+      }else{
+        throw err;
+      }
+    }
+    csShowToast('Connecté ✓');
+  }catch(err){
+    console.error(err);
+    csShowToast(err.message || "Connexion impossible, réessaie.");
+  }
+}
+async function csHandleSignOut(){
+  try{
+    await window.CS.signOutUser();
+    csShowToast('Déconnecté.');
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
+  }catch(err){ console.error(err); }
+}
+let csUser = null;
+let csUnsubscribeUserDoc = null;
+function csInitAuth(){
+  window.CS.completeSignInIfLink().catch(err => console.error(err));
+  window.CS.onAuthChange(async (user) => {
+    csUser = user;
+    csRenderAuthWidget(user);
+    if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
+    if(user){
+      await window.CS.ensureUserDoc(user);
+      csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
+        window.csCurrentPlanId = window.CS.isAdmin(user) ? 'admin' : (data.planId || 'genesis');
+        renderPlanMenu(true);
+      });
+    }else{
+      window.csCurrentPlanId = 'genesis';
+      renderPlanMenu(false);
+    }
+  });
+}
+if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+
+function planMenuRowHTML(label, status){
+  if(status.unlimited){
+    return `<div class="plan-menu-row"><div class="row-label">${label} <span class="row-count">Illimité ✓</span></div></div>`;
+  }
+  if(status.limit === 0){
+    return `<div class="plan-menu-row is-locked"><div class="row-label">${label} <span class="row-count">Non inclus</span></div></div>`;
+  }
+  const pct = Math.min(100, Math.round((status.used / status.limit) * 100));
+  const isFull = status.remaining <= 0;
+  return `
+    <div class="plan-menu-row">
+      <div class="row-label">${label} <span class="row-count">${status.remaining}/${status.limit} · ${status.period}</span></div>
+      <div class="plan-menu-bar"><div class="plan-menu-bar-fill ${isFull ? 'is-full' : ''}" style="width:${pct}%;"></div></div>
+    </div>`;
+}
+
+function togglePlanMenu(){
+  const el = document.getElementById('cs-plan-menu');
+  const menu = el.querySelector('.plan-menu');
+  if(menu) menu.classList.toggle('is-open');
+}
+
+document.addEventListener('click', (e) => {
+  const el = document.getElementById('cs-plan-menu');
+  if(el && !el.contains(e.target)){
+    const menu = el.querySelector('.plan-menu');
+    if(menu) menu.classList.remove('is-open');
+  }
+});
+
+function renderPlanMenu(loggedIn){
+  const el = document.getElementById('cs-plan-menu');
+  if(!el) return;
+  if(!loggedIn || typeof CSQuota === 'undefined'){
+    el.innerHTML = '';
+    return;
+  }
+  const summary = CSQuota.getSummary();
+  el.innerHTML = `
+    <div class="plan-menu">
+      <button type="button" class="plan-menu-btn" onclick="togglePlanMenu()">${escapeHtml(summary.planName)} <span class="chev">▾</span></button>
+      <div class="plan-menu-panel">
+        ${planMenuRowHTML('Visuels', summary.visuels)}
+        ${planMenuRowHTML('Carrousels', summary.carrousels)}
+        ${planMenuRowHTML('PowerPoint', summary.ppt)}
+        <a class="plan-menu-link" href="accueil.html">Gérer mon forfait →</a>
+      </div>
+    </div>`;
+}
+</script>
+  <div id="quota-lock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,8,0.92);color:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:Inter,system-ui,sans-serif;">
+    <div style="max-width:420px;">
+      <h2 style="margin:0 0 12px;font-size:22px;">L’export PowerPoint n’est pas inclus dans ton forfait</h2>
+      <p id="quota-lock-message" style="margin:0 0 24px;opacity:.85;line-height:1.5;">Le forfait Freemium n’inclut pas l’accès à l’éditeur de présentations. Passe au forfait Premium ou Premium+ pour l’utiliser. Pour ton carrousel gratuit, rends-toi sur Carrousel Studio.</p>
+      <a href="accueil.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Voir les forfaits</a>
+    </div>
+  </div>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="carrousel.html" aria-label="Retour à Carrousel Studio" style="text-decoration:none;color:inherit">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span><strong>Carrousel Studio</strong><span>Éditeur local de présentations</span></span>
+      </a>
+      <div class="top-actions">
+        <a class="btn subtle back-link" href="carrousel.html">← Retour à Carrousel Studio</a>
+        <a class="btn subtle back-link" href="visuel.html">Créer un visuel</a>
+        <span id="save-status" class="status" data-state="loading" role="status" aria-live="polite">Chargement…</span>
+        <button class="btn subtle" id="new-presentation" type="button">Nouvelle présentation</button>
+        <button class="btn subtle" id="sample-presentation" type="button">Charger l’exemple</button>
+        <button class="btn" id="import-json" type="button">Importer</button>
+        <button class="btn" id="export-json" type="button">Sauvegarder</button>
+        <input id="import-file" class="hidden" type="file" accept="application/json,.json">
+      </div>
+    </header>
+
+    <main class="workspace" aria-label="Éditeur de présentations">
+      <aside class="panel sidebar" aria-label="Liste des diapositives">
+        <div class="panel-heading">
+          <h2>Diapositives</h2>
+          <button class="icon-btn" id="add-slide" type="button" aria-label="Ajouter une diapositive" title="Ajouter une diapositive">＋</button>
+        </div>
+        <p class="small muted">Tout reste dans ce navigateur. Exporte un fichier JSON pour sauvegarder ailleurs.</p>
+        <details class="auto-generator" id="auto-generator">
+          <summary>Générer automatiquement</summary>
+          <p class="small muted">Colle un texte comme dans le générateur principal. Gemini créera les slides, puis tu pourras tout modifier ici.</p>
+          <div class="field"><label for="auto-topic">Titre (optionnel)</label><input id="auto-topic" maxlength="100" placeholder="Ex : Les bases du Bitcoin"></div>
+          <div class="field"><label for="auto-source">Texte à transformer</label><textarea id="auto-source" maxlength="18000" placeholder="Colle ton article ou tes notes ici…"></textarea></div>
+          <div class="two-col">
+            <div class="field"><label for="auto-count">Slides</label><select id="auto-count"><option value="auto">Auto</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div>
+            <div class="field"><label for="auto-tone">Ton</label><select id="auto-tone"><option value="educatif">Éducatif</option><option value="opinion">Avis</option><option value="storytelling">Storytelling</option></select></div>
+          </div>
+          <button class="btn primary" id="auto-generate" type="button">Générer les slides</button>
+          <p id="auto-state" class="small muted" role="status" aria-live="polite">Minimum recommandé : quelques phrases.</p>
+        </details>
+        <div id="slide-list" class="slide-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="panel stage-panel" aria-label="Canevas de présentation">
+        <div class="stage-toolbar">
+          <div>
+            <p class="hint"><strong id="slide-title-label">Diapositive</strong> · <span id="mode-hint">Sélectionne un objet ou ajoute du contenu.</span></p>
+          </div>
+          <div class="toolbar-group" role="toolbar" aria-label="Outils d’édition">
+            <button class="btn tool-btn" data-tool="select" aria-pressed="true" type="button">Sélectionner</button>
+            <button class="btn tool-btn" data-tool="text" aria-pressed="false" type="button">＋ Texte</button>
+            <button class="btn tool-btn" data-tool="rect" aria-pressed="false" type="button">＋ Forme</button>
+            <button class="btn" id="add-image" type="button">＋ Image</button>
+            <input id="image-file" class="hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+            <div class="emoji-tools" aria-label="Ajouter un emoji">
+              <button class="emoji-btn" type="button" data-emoji="✨" aria-label="Ajouter l’emoji étincelles">✨</button>
+              <button class="emoji-btn" type="button" data-emoji="🚀" aria-label="Ajouter l’emoji fusée">🚀</button>
+              <button class="emoji-btn" type="button" data-emoji="💡" aria-label="Ajouter l’emoji ampoule">💡</button>
+              <button class="emoji-btn" type="button" data-emoji="✅" aria-label="Ajouter l’emoji validation">✅</button>
+            </div>
+            <button class="btn tool-btn" data-tool="connect" aria-pressed="false" type="button">Relier</button>
+            <button class="btn dark" id="export-svg" type="button">Exporter SVG</button>
+            <button class="btn primary" id="export-png" type="button">Exporter PNG</button>
+          </div>
+        </div>
+        <div class="surface-wrap">
+          <div class="surface-frame" id="surface-frame" aria-label="Aperçu de la diapositive">
+            <div class="design-surface" id="design-surface" tabindex="0" role="application" aria-label="Canevas éditable"></div>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="btn" id="duplicate-slide" type="button">Dupliquer la slide</button>
+          <button class="btn danger" id="delete-slide" type="button">Supprimer la slide</button>
+          <span class="small muted">Raccourcis : <kbd>Ctrl/⌘ + S</kbd> sauvegarder · <kbd>Suppr.</kbd> supprimer · flèches déplacer</span>
+        </div>
+      </section>
+
+      <aside class="panel inspector" aria-label="Propriétés de la sélection">
+        <section class="inspector-section">
+          <h3>Présentation</h3>
+          <div class="field"><label for="presentation-title">Nom</label><input id="presentation-title" maxlength="100" value="Ma présentation"></div>
+          <div class="field"><label for="slide-title">Titre de la slide</label><input id="slide-title" maxlength="100"></div>
+          <div class="field"><label for="slide-background">Fond</label><input id="slide-background" type="color" value="#15233a"></div>
+        </section>
+        <section class="inspector-section" id="object-inspector">
+          <h3>Objet sélectionné</h3>
+          <div id="no-selection" class="small muted">Aucun objet sélectionné. Choisis un texte, une forme ou une image sur le canevas.</div>
+          <div id="selection-fields" class="hidden">
+            <div class="field"><label for="object-text">Texte ou emoji</label><textarea id="object-text" maxlength="800"></textarea></div>
+            <div class="field hidden" id="image-alt-field"><label for="object-alt">Description de l’image</label><input id="object-alt" maxlength="160" placeholder="Décris brièvement l’image"></div>
+            <div class="two-col">
+              <div class="field"><label for="object-x">X</label><input id="object-x" type="number" min="0" max="960"></div>
+              <div class="field"><label for="object-y">Y</label><input id="object-y" type="number" min="0" max="540"></div>
+              <div class="field"><label for="object-w">Largeur</label><input id="object-w" type="number" min="24" max="960"></div>
+              <div class="field"><label for="object-h">Hauteur</label><input id="object-h" type="number" min="20" max="540"></div>
+            </div>
+            <div class="two-col">
+              <div class="field"><label for="object-color">Texte</label><input id="object-color" type="color" value="#ffffff"></div>
+              <div class="field"><label for="object-fill">Fond</label><input id="object-fill" type="color" value="#ff7a2f"></div>
+              <div class="field"><label for="object-size">Taille</label><input id="object-size" type="number" min="8" max="120" value="40"></div>
+              <div class="field"><label for="object-radius">Arrondi</label><input id="object-radius" type="number" min="0" max="60" value="10"></div>
+            </div>
+            <label class="check-row"><input id="object-bold" type="checkbox" checked> Texte en gras</label>
+            <div class="button-row" style="margin-top:12px"><button class="btn danger" id="delete-object" type="button">Supprimer l’objet</button></div>
+          </div>
+        </section>
+        <section class="inspector-section">
+          <h3>Conseil</h3>
+          <p class="small muted">Double-clique sur un texte pour le modifier directement. Les exemples sont signalés et peuvent être supprimés avec « Nouvelle présentation ».</p>
+        </section>
+      </aside>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="quota.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const DB_NAME = 'carrousel-studio-editor';
+      const STORE_NAME = 'presentations';
+      const DB_VERSION = 1;
+      const SURFACE_W = 960;
+      const SURFACE_H = 540;
+      const MAX_SLIDES = 30;
+      const MAX_OBJECTS = 80;
+      const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+      const MAX_IMAGE_DATA_LENGTH = 4500000;
+      const $ = (id) => document.getElementById(id);
+      const surface = $('design-surface');
+      const frame = $('surface-frame');
+      const state = {
+        db: null,
+        presentation: null,
+        selectedSlide: 0,
+        selectedObject: null,
+        tool: 'select',
+        connectStart: null,
+        history: [],
+        future: [],
+        saveTimer: null,
+        drag: null,
+        resize: null
+      };
+
+      function uid(prefix) { return prefix + '-' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); }
+      function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+      function safeText(value, max = 800) { return String(value ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').slice(0, max); }
+      function validColor(value, fallback) { return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback; }
+      function validImageData(value) { const src = String(value ?? ''); return src.length <= MAX_IMAGE_DATA_LENGTH && /^data:image\/(?:png|jpeg|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(src) ? src : ''; }
+      function deepCopy(value) { return JSON.parse(JSON.stringify(value)); }
+      function escapeXml(value) { return String(value).replace(/[<>&'"]/g, ch => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[ch])); }
+      function currentSlide() { return state.presentation?.slides?.[state.selectedSlide] || null; }
+      function selectedObject() { return currentSlide()?.objects?.find(obj => obj.id === state.selectedObject) || null; }
+
+      function samplePresentation() {
+        const slideId = uid('slide');
+        const textId = uid('obj');
+        return {
+          version: 1,
+          title: 'Exemple — à supprimer',
+          updatedAt: new Date().toISOString(),
+          slides: [{
+            id: slideId,
+            title: 'Une idée en trois étapes',
+            background: '#15233a',
+            objects: [
+              { id: textId, type: 'text', x: 78, y: 72, w: 650, h: 140, text: 'Une idée claire mérite une présentation simple.', color: '#ffffff', fill: '#ff7a2f', fontSize: 52, radius: 10, bold: true },
+              { id: uid('obj'), type: 'text', x: 82, y: 260, w: 540, h: 70, text: '1. Structure\n2. Montre\n3. Partage', color: '#ffe3c8', fill: '#15233a', fontSize: 28, radius: 8, bold: false },
+              { id: uid('obj'), type: 'rect', x: 720, y: 70, w: 150, h: 150, text: '', color: '#15233a', fill: '#ffc928', fontSize: 20, radius: 28, bold: true }
+            ]
+          }]
+        };
+      }
+      function blankPresentation() {
+        const p = samplePresentation();
+        p.title = 'Nouvelle présentation';
+        p.slides[0].title = 'Slide 1';
+        p.slides[0].objects = [];
+        return p;
+      }
+
+      function normalizePresentation(raw) {
+        if (!raw || typeof raw !== 'object' || !Array.isArray(raw.slides)) throw new Error('Format de présentation invalide.');
+        const slides = raw.slides.slice(0, MAX_SLIDES).map((slide, index) => {
+          if (!slide || typeof slide !== 'object') throw new Error('Une slide est invalide.');
+          const objects = Array.isArray(slide.objects) ? slide.objects.slice(0, MAX_OBJECTS).map(obj => {
+            if (!obj || !['text','rect','image','connector'].includes(obj.type)) throw new Error('Un objet est invalide.');
+            const src = obj.type === 'image' ? validImageData(obj.src) : '';
+            if (obj.type === 'image' && !src) throw new Error('Une image importée est invalide ou trop volumineuse.');
+            return {
+              id: safeText(obj.id, 80) || uid('obj'), type: obj.type,
+              x: clamp(Number(obj.x) || 0, 0, SURFACE_W - 24), y: clamp(Number(obj.y) || 0, 0, SURFACE_H - 20),
+              w: clamp(Number(obj.w) || 120, 24, SURFACE_W), h: clamp(Number(obj.h) || 60, 20, SURFACE_H),
+              text: safeText(obj.text, 800), alt: safeText(obj.alt, 160), src,
+              color: validColor(obj.color, '#ffffff'), fill: validColor(obj.fill, '#ff7a2f'),
+              fontSize: clamp(Number(obj.fontSize) || 32, 8, 120), radius: clamp(Number(obj.radius) || 10, 0, 60), bold: obj.bold !== false,
+              from: safeText(obj.from, 80), to: safeText(obj.to, 80)
+            };
+          }) : [];
+          return { id: safeText(slide.id, 80) || uid('slide'), title: safeText(slide.title, 100) || `Slide ${index + 1}`, background: validColor(slide.background, '#15233a'), objects };
+        });
+        if (!slides.length) throw new Error('La présentation doit contenir au moins une slide.');
+        return { version: 1, title: safeText(raw.title, 100) || 'Nouvelle présentation', updatedAt: new Date().toISOString(), slides };
+      }
+
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error('IndexedDB indisponible.'));
+        });
+      }
+      function dbGet(db, id) {
+        return new Promise((resolve, reject) => { const r = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(id); r.onsuccess = () => resolve(r.result?.data || null); r.onerror = () => reject(r.error); });
+      }
+      function dbPut(db, data) {
+        return new Promise((resolve, reject) => { const r = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put({ id: 'current', data }); r.onsuccess = resolve; r.onerror = () => reject(r.error); });
+      }
+      function setStatus(text, stateName = 'success') { const el = $('save-status'); el.textContent = text; el.dataset.state = stateName; }
+      let toastTimer;
+      function toast(message, isError = false) { const el = $('toast'); el.textContent = message; el.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.className = 'toast'; }, 2600); }
+      function snapshot() { if (state.presentation) { state.history.push(deepCopy(state.presentation)); if (state.history.length > 40) state.history.shift(); state.future = []; } }
+      function markChanged(message = 'Modifications non sauvegardées') { state.presentation.updatedAt = new Date().toISOString(); setStatus(message, 'loading'); clearTimeout(state.saveTimer); state.saveTimer = setTimeout(save, 550); render(); }
+      async function save() { if (!state.db || !state.presentation) return; try { await dbPut(state.db, state.presentation); setStatus('Enregistré localement', 'success'); } catch (error) { console.error('Échec de sauvegarde locale', error); setStatus('Sauvegarde impossible', 'error'); toast('Impossible de sauvegarder dans ce navigateur.', true); } }
+
+      function renderSlideList() {
+        const list = $('slide-list'); list.replaceChildren();
+        if (!state.presentation?.slides?.length) { list.innerHTML = '<div class="empty-state"><strong>Aucune slide</strong>Ajoute une slide pour commencer.</div>'; return; }
+        state.presentation.slides.forEach((slide, index) => {
+          const button = document.createElement('button'); button.type = 'button'; button.className = 'slide-thumb'; button.setAttribute('aria-current', String(index === state.selectedSlide)); button.setAttribute('aria-label', `Sélectionner la slide ${index + 1}: ${slide.title}`);
+          const preview = document.createElement('div'); preview.className = 'slide-thumb-preview'; preview.style.background = slide.background;
+          const title = document.createElement('span'); title.textContent = slide.objects.find(obj => obj.type === 'text' && obj.text)?.text || slide.title; preview.append(title);
+          // Correctif sécurité (audit du 2 oct. 2026) : slide.title peut
+          // venir d'un fichier JSON importé (voir normalizePresentation,
+          // qui ne filtre que les caractères de contrôle via safeText(),
+          // pas les balises HTML). Sans échappement ici, un fichier
+          // partagé contenant ex. title:"<img src=x onerror=...>" exécute
+          // du JS arbitraire dès l'ouverture dans l'éditeur (XSS stocké).
+          const meta = document.createElement('div'); meta.className = 'slide-thumb-meta'; meta.innerHTML = `<span class="slide-number">${index + 1}</span><span>${escapeHtml(slide.title) || 'Sans titre'}</span>`;
+          button.append(preview, meta); button.addEventListener('click', () => { state.selectedSlide = index; state.selectedObject = null; state.connectStart = null; setTool('select'); render(); }); list.append(button);
+        });
+      }
+      function renderInspector() {
+        const slide = currentSlide(); const obj = selectedObject();
+        $('presentation-title').value = state.presentation?.title || '';
+        $('slide-title').value = slide?.title || '';
+        $('slide-background').value = slide?.background || '#15233a';
+        $('slide-title-label').textContent = slide ? `${state.selectedSlide + 1}. ${slide.title}` : 'Diapositive';
+        $('selection-fields').classList.toggle('hidden', !obj || obj.type === 'connector'); $('no-selection').classList.toggle('hidden', !!obj && obj.type !== 'connector');
+        $('image-alt-field').classList.toggle('hidden', !obj || obj.type !== 'image');
+        if (!obj || obj.type === 'connector') return;
+        $('object-text').value = obj.text || ''; $('object-alt').value = obj.alt || ''; $('object-x').value = Math.round(obj.x); $('object-y').value = Math.round(obj.y); $('object-w').value = Math.round(obj.w); $('object-h').value = Math.round(obj.h);
+        $('object-color').value = obj.color; $('object-fill').value = obj.fill; $('object-size').value = obj.fontSize; $('object-radius').value = obj.radius; $('object-bold').checked = obj.bold !== false;
+      }
+      function renderSurface() {
+        const slide = currentSlide(); surface.replaceChildren();
+        if (!slide) { surface.innerHTML = '<div class="surface-empty">Aucune slide sélectionnée</div>'; return; }
+        surface.style.background = slide.background;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'connector-layer'); svg.setAttribute('viewBox', `0 0 ${SURFACE_W} ${SURFACE_H}`); svg.innerHTML = '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff7a2f"></path></marker></defs>';
+        const objectMap = new Map(slide.objects.map(obj => [obj.id, obj]));
+        slide.objects.filter(obj => obj.type === 'connector').forEach(connector => {
+          const from = objectMap.get(connector.from), to = objectMap.get(connector.to); if (!from || !to) return;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', from.x + from.w / 2); line.setAttribute('y1', from.y + from.h / 2); line.setAttribute('x2', to.x + to.w / 2); line.setAttribute('y2', to.y + to.h / 2); if (state.selectedObject === connector.id) line.classList.add('selected'); svg.append(line);
+        });
+        surface.append(svg);
+        slide.objects.filter(obj => obj.type !== 'connector').forEach(obj => {
+          const el = document.createElement('div'); el.className = `object ${obj.type}` + (state.selectedObject === obj.id ? ' selected' : ''); el.dataset.id = obj.id; el.tabIndex = 0; el.setAttribute('role', 'button'); const typeLabel = obj.type === 'text' ? 'Texte' : obj.type === 'image' ? 'Image' : 'Forme'; el.setAttribute('aria-label', `${typeLabel}: ${obj.type === 'image' ? (obj.alt || 'sans description') : (obj.text || 'sans texte')}`); el.style.left = obj.x + 'px'; el.style.top = obj.y + 'px'; el.style.width = obj.w + 'px'; el.style.height = obj.h + 'px'; el.style.background = obj.type === 'rect' ? obj.fill : 'transparent'; el.style.color = obj.color; el.style.borderRadius = obj.radius + 'px'; el.style.fontSize = obj.fontSize + 'px'; el.style.fontWeight = obj.bold ? '800' : '500';
+          if (obj.type === 'image') { const image = document.createElement('img'); image.src = obj.src; image.alt = obj.alt || 'Image de la slide'; image.draggable = false; image.addEventListener('error', () => { el.replaceChildren(); const placeholder = document.createElement('span'); placeholder.className = 'image-placeholder'; placeholder.textContent = 'Image indisponible'; el.append(placeholder); }); el.append(image); } else { el.textContent = obj.text || ''; }
+          if (state.selectedObject === obj.id) { const handle = document.createElement('span'); handle.className = 'resize-handle'; handle.setAttribute('aria-label', 'Redimensionner'); el.append(handle); }
+          el.addEventListener('pointerdown', onObjectPointerDown); el.addEventListener('dblclick', onObjectDoubleClick); el.addEventListener('keydown', onObjectKeydown); surface.append(el);
+        });
+        updateSurfaceScale();
+      }
+      function updateSurfaceScale() { const scale = frame.clientWidth / SURFACE_W; surface.style.transform = `scale(${scale})`; }
+      function render() { renderSlideList(); renderSurface(); renderInspector(); }
+
+      function setTool(tool) { state.tool = tool; state.connectStart = null; document.querySelectorAll('[data-tool]').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.tool === tool))); $('mode-hint').textContent = tool === 'connect' ? 'Clique sur deux objets pour les relier.' : tool === 'text' ? 'Clique sur le canevas pour placer un texte.' : tool === 'rect' ? 'Clique sur le canevas pour placer une forme.' : 'Sélectionne un objet ou ajoute du contenu.'; }
+      function surfacePoint(event) { const rect = surface.getBoundingClientRect(); const scale = frame.clientWidth / SURFACE_W; return { x: clamp((event.clientX - rect.left) / scale, 0, SURFACE_W), y: clamp((event.clientY - rect.top) / scale, 0, SURFACE_H) }; }
+      function addObject(type, point) { const slide = currentSlide(); if (!slide || slide.objects.length >= MAX_OBJECTS) { toast('Limite d’objets atteinte.', true); return; } snapshot(); const obj = { id: uid('obj'), type, x: clamp(point.x - 100, 0, SURFACE_W - 200), y: clamp(point.y - 35, 0, SURFACE_H - 70), w: type === 'text' ? 330 : 200, h: type === 'text' ? 75 : 120, text: type === 'text' ? 'Nouveau texte' : '', color: '#ffffff', fill: type === 'text' ? '#ff7a2f' : '#ffc928', fontSize: type === 'text' ? 34 : 20, radius: 12, bold: true }; slide.objects.push(obj); state.selectedObject = obj.id; setTool('select'); markChanged(); }
+      function addEmoji(emoji) { const slide = currentSlide(); if (!slide || slide.objects.length >= MAX_OBJECTS) { toast('Limite d’objets atteinte.', true); return; } snapshot(); const obj = { id: uid('obj'), type: 'text', x: 380, y: 190, w: 200, h: 150, text: emoji, color: '#19140d', fill: 'transparent', fontSize: 104, radius: 0, bold: false, alt: '', src: '', from: '', to: '' }; slide.objects.push(obj); state.selectedObject = obj.id; setTool('select'); markChanged('Emoji ajouté'); }
+      function readImageAsDataUrl(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || '')); reader.onerror = () => reject(new Error('Impossible de lire cette image.')); reader.readAsDataURL(file); }); }
+      async function addImageFromFile(file) { if (!file) return; if (!/^image\/(?:png|jpeg|webp|gif)$/i.test(file.type)) { toast('Format non pris en charge. Utilise PNG, JPG, WebP ou GIF.', true); return; } if (file.size > MAX_IMAGE_BYTES) { toast('Image trop volumineuse. La limite est de 3 Mo.', true); return; } const slide = currentSlide(); if (!slide || slide.objects.length >= MAX_OBJECTS) { toast('Limite d’objets atteinte.', true); return; } try { const src = await readImageAsDataUrl(file); if (!validImageData(src)) throw new Error('Cette image est invalide ou trop volumineuse après lecture.'); const image = new Image(); image.onload = () => { snapshot(); const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1.5; const w = Math.min(320, SURFACE_W - 40); const h = Math.min(240, w / ratio); const obj = { id: uid('obj'), type: 'image', x: (SURFACE_W - w) / 2, y: (SURFACE_H - h) / 2, w, h, text: '', alt: safeText(file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '), 160) || 'Image importée', src, color: '#19140d', fill: '#ffffff', fontSize: 20, radius: 12, bold: false, from: '', to: '' }; slide.objects.push(obj); state.selectedObject = obj.id; setTool('select'); markChanged('Image ajoutée'); toast('Image ajoutée — tu peux la déplacer et la redimensionner.'); }; image.onerror = () => toast('Impossible de décoder cette image.', true); image.src = src; } catch (error) { toast(error.message || 'Import impossible.', true); } }
+      function connectObjects(first, second) { const slide = currentSlide(); if (!slide || first === second) return; if (slide.objects.some(obj => obj.type === 'connector' && obj.from === first && obj.to === second)) { toast('Ces objets sont déjà reliés.'); return; } snapshot(); slide.objects.push({ id: uid('line'), type: 'connector', from: first, to: second, x: 0, y: 0, w: 0, h: 0, text: '', color: '#ff7a2f', fill: '#ff7a2f', fontSize: 1, radius: 0, bold: false }); state.selectedObject = null; markChanged('Connexion ajoutée'); }
+      function onSurfaceClick(event) { if (event.target !== surface && event.target !== surface.querySelector('.surface-empty')) return; if (state.tool === 'text' || state.tool === 'rect') addObject(state.tool, surfacePoint(event)); else { state.selectedObject = null; render(); } }
+      function onObjectPointerDown(event) { event.stopPropagation(); const id = event.currentTarget.dataset.id; if (state.tool === 'connect') { if (!state.connectStart) { state.connectStart = id; state.selectedObject = id; toast('Premier objet sélectionné. Clique sur le second.'); render(); } else { connectObjects(state.connectStart, id); state.connectStart = null; } return; } state.selectedObject = id; const obj = selectedObject(); if (!obj) return; const point = surfacePoint(event); if (event.target.classList.contains('resize-handle')) { state.resize = { id, startX: point.x, startY: point.y, w: obj.w, h: obj.h }; } else { snapshot(); state.drag = { id, startX: point.x, startY: point.y, x: obj.x, y: obj.y }; } render(); }
+      function onObjectDoubleClick(event) { event.stopPropagation(); const id = event.currentTarget.dataset.id; const obj = slideObjectById(id); if (!obj || obj.type !== 'text') return; const el = event.currentTarget; el.contentEditable = 'true'; el.focus(); document.execCommand('selectAll', false); el.addEventListener('blur', () => { snapshot(); obj.text = safeText(el.textContent, 800); el.contentEditable = 'false'; markChanged(); }, { once: true }); }
+      function slideObjectById(id) { return currentSlide()?.objects.find(obj => obj.id === id); }
+      function onObjectKeydown(event) { if (event.key === 'Enter' && event.currentTarget.contentEditable === 'true') { event.preventDefault(); event.currentTarget.blur(); } }
+      function onPointerMove(event) { const point = surfacePoint(event); if (state.drag) { const obj = slideObjectById(state.drag.id); if (!obj) return; obj.x = clamp(state.drag.x + point.x - state.drag.startX, 0, SURFACE_W - obj.w); obj.y = clamp(state.drag.y + point.y - state.drag.startY, 0, SURFACE_H - obj.h); renderSurface(); renderInspector(); } else if (state.resize) { const obj = slideObjectById(state.resize.id); if (!obj) return; obj.w = clamp(state.resize.w + point.x - state.resize.startX, 24, SURFACE_W - obj.x); obj.h = clamp(state.resize.h + point.y - state.resize.startY, 20, SURFACE_H - obj.y); renderSurface(); renderInspector(); } }
+      function onPointerUp() { if (state.drag || state.resize) { state.drag = null; state.resize = null; markChanged(); } }
+      function onKeydown(event) { if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && !event.metaKey && !event.ctrlKey) return; const obj = selectedObject(); if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); save(); toast('Présentation sauvegardée localement.'); return; } if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); if (event.shiftKey) redo(); else undo(); return; } if (event.key === 'Escape') { state.selectedObject = null; setTool('select'); render(); return; } if (!obj || obj.type === 'connector') return; if (['Delete','Backspace'].includes(event.key)) { event.preventDefault(); deleteSelectedObject(); return; } const step = event.shiftKey ? 10 : 2; if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) { event.preventDefault(); snapshot(); if (event.key === 'ArrowLeft') obj.x = clamp(obj.x - step, 0, SURFACE_W - obj.w); if (event.key === 'ArrowRight') obj.x = clamp(obj.x + step, 0, SURFACE_W - obj.w); if (event.key === 'ArrowUp') obj.y = clamp(obj.y - step, 0, SURFACE_H - obj.h); if (event.key === 'ArrowDown') obj.y = clamp(obj.y + step, 0, SURFACE_H - obj.h); markChanged(); } }
+      function deleteSelectedObject() { const slide = currentSlide(); if (!slide || !state.selectedObject) return; snapshot(); const id = state.selectedObject; slide.objects = slide.objects.filter(obj => obj.id !== id && obj.from !== id && obj.to !== id); state.selectedObject = null; markChanged('Objet supprimé'); }
+      function undo() { if (!state.history.length) { toast('Rien à annuler.'); return; } state.future.push(deepCopy(state.presentation)); state.presentation = state.history.pop(); state.selectedObject = null; markChanged('Modification annulée'); }
+      function redo() { if (!state.future.length) { toast('Rien à rétablir.'); return; } state.history.push(deepCopy(state.presentation)); state.presentation = state.future.pop(); state.selectedObject = null; markChanged('Modification rétablie'); }
+      function parseGeneratedPresentation(responseData, requestedTitle) {
+        let raw = (responseData.content || []).filter(block => block.type === 'text').map(block => block.text).join('\\n');
+        raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(raw);
+        if (!parsed.cover || !parsed.cta || !Array.isArray(parsed.slides) || !parsed.slides.length) throw new Error('La réponse de Gemini ne contient pas assez de slides.');
+        const objectsFor = (type, title, body) => {
+          const isCover = type === 'cover'; const isCta = type === 'cta';
+          const titleColor = isCover || isCta ? '#ffffff' : '#19140d';
+          const bodyColor = isCover || isCta ? '#fff4e8' : '#4b4032';
+          return [
+            { id: uid('obj'), type: 'text', x: 68, y: isCover ? 78 : isCta ? 92 : 62, w: 820, h: isCover ? 155 : 125, text: safeText(title, 160), color: titleColor, fill: 'transparent', fontSize: isCover ? 56 : isCta ? 50 : 44, radius: 0, bold: true },
+            { id: uid('obj'), type: 'text', x: 72, y: isCover ? 260 : isCta ? 278 : 178, w: 800, h: isCover ? 100 : 220, text: safeText(body, 800), color: bodyColor, fill: 'transparent', fontSize: isCover ? 28 : 27, radius: 0, bold: false }
+          ];
+        };
+        const slides = [{ id: uid('slide'), title: 'Couverture', background: '#ff7a2f', objects: objectsFor('cover', parsed.cover.title, parsed.cover.subtitle) }];
+        parsed.slides.slice(0, 10).forEach((item, index) => slides.push({ id: uid('slide'), title: safeText(item.title, 100) || `Slide ${index + 1}`, background: index % 2 ? '#fffaf2' : '#f6e7d2', objects: objectsFor('content', item.title, item.body) }));
+        slides.push({ id: uid('slide'), title: 'Conclusion', background: '#171713', objects: objectsFor('cta', parsed.cta.title, parsed.cta.body) });
+        return normalizePresentation({ version: 1, title: safeText(requestedTitle, 100) || safeText(parsed.cover.title, 100) || 'Présentation générée', updatedAt: new Date().toISOString(), slides });
+      }
+      async function generateAutomaticSlides() {
+        const source = $('auto-source').value.trim(); const requestedTitle = $('auto-topic').value.trim(); const count = $('auto-count').value; const tone = $('auto-tone').value;
+        if (source.length < 40) { $('auto-state').textContent = 'Ajoute au moins quelques phrases pour obtenir une structure utile.'; toast('Le texte est trop court pour générer des slides.', true); return; }
+        const button = $('auto-generate'); const originalLabel = button.textContent; button.disabled = true; button.setAttribute('aria-busy', 'true'); button.textContent = 'Génération en cours…'; $('auto-state').textContent = 'Gemini prépare la structure. Tu pourras tout modifier ensuite.';
+        const toneLabel = { educatif: 'éducatif, clair et pédagogique', opinion: 'avis tranché et incisif', storytelling: 'narratif et immersif' }[tone] || 'clair et professionnel';
+        const countInstruction = count === 'auto' ? 'Choisis entre 5 et 8 slides de contenu selon la richesse du texte.' : `Crée exactement ${count} slides de contenu.`;
+        const system = `Tu es un expert en carrousels LinkedIn francophones. Structure le texte fourni en présentation claire et lisible. Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, au format : {"cover":{"title":"titre court","subtitle":"accroche courte"},"slides":[{"title":"titre court","body":"2 à 4 phrases courtes ou puces séparées par des sauts de ligne"}],"cta":{"title":"conclusion courte","body":"synthèse et appel à l’action"}}. Contraintes : ton ${toneLabel}; ${countInstruction}; langue française; une idée claire par slide; pas de hashtags; pas d’emoji excessif; texte lisible en quelques secondes.`;
+        const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 90000);
+        try {
+          const response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ system, messages: [{ role: 'user', content: `${requestedTitle ? `Titre souhaité : ${requestedTitle}\\n\\n` : ''}Texte source :\\n${source}` }] }), signal: controller.signal });
+          const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Le serveur n’a pas pu générer les slides.');
+          snapshot(); state.presentation = parseGeneratedPresentation(data, requestedTitle); state.selectedSlide = 0; state.selectedObject = null; state.history = state.history.slice(-40); $('auto-state').textContent = `${state.presentation.slides.length - 2} slides de contenu générées. Elles sont maintenant éditables.`; $('auto-generator').open = false; markChanged('Slides générées'); toast('Présentation générée — tu peux modifier chaque slide.');
+        } catch (error) {
+          const message = error.name === 'AbortError' ? 'La génération a pris trop de temps. Réessaie avec un texte plus court.' : (error.message || 'La génération a échoué.'); $('auto-state').textContent = message; toast(message, true);
+        } finally { clearTimeout(timeout); button.disabled = false; button.removeAttribute('aria-busy'); button.textContent = originalLabel; }
+      }
+      function download(name, blob) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
+      function exportJson() { const data = JSON.stringify(state.presentation, null, 2); download((state.presentation.title || 'presentation').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '.json', new Blob([data], { type: 'application/json' })); toast('Sauvegarde JSON téléchargée.'); }
+      function svgForSlide(slide) { const lines = slide.objects.filter(obj => obj.type === 'connector'); const map = new Map(slide.objects.map(obj => [obj.id, obj])); let body = `<rect width="${SURFACE_W}" height="${SURFACE_H}" fill="${slide.background}"/>`; body += '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff7a2f"/></marker></defs>'; lines.forEach(line => { const a = map.get(line.from), b = map.get(line.to); if (a && b) body += `<line x1="${a.x + a.w/2}" y1="${a.y + a.h/2}" x2="${b.x + b.w/2}" y2="${b.y + b.h/2}" stroke="#ff7a2f" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>`; }); slide.objects.filter(obj => obj.type !== 'connector').forEach(obj => { if (obj.type === 'image') { body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="#ffffff" fill-opacity="0.3"/>`; body += `<image href="${escapeXml(obj.src)}" x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" preserveAspectRatio="xMidYMid meet"/>`; return; } const fill = obj.type === 'rect' ? obj.fill : 'transparent'; body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="${fill}"/>`; if (obj.text) { const lines = obj.text.split('\n'); lines.forEach((line, index) => { body += `<text x="${obj.x + 8}" y="${obj.y + obj.fontSize + 5 + index * obj.fontSize * 1.15}" fill="${obj.color}" font-family="Inter,Arial,sans-serif" font-size="${obj.fontSize}" font-weight="${obj.bold ? 800 : 500}">${escapeXml(line)}</text>`; }); } }); return `<svg xmlns="http://www.w3.org/2000/svg" width="${SURFACE_W}" height="${SURFACE_H}" viewBox="0 0 ${SURFACE_W} ${SURFACE_H}">${body}</svg>`; }
+      function exportFilename() { const raw = state.presentation?.title || 'presentation'; const normalized = safeText(raw, 100).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase(); return (normalized || 'presentation').slice(0, 70); }
+      function exportSvg() { const check = CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.svg`, new Blob([svgForSlide(slide)], { type: 'image/svg+xml' })); CSQuota.recordPowerPointExport(); renderPlanMenu(!!csUser); toast('Export SVG terminé.'); }
+      function exportPng() { const check = CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; const svg = svgForSlide(slide); const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = SURFACE_W * 2; canvas.height = SURFACE_H * 2; const ctx = canvas.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(image, 0, 0, SURFACE_W, SURFACE_H); canvas.toBlob(blob => { if (blob) { download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.png`, blob); CSQuota.recordPowerPointExport(); renderPlanMenu(!!csUser); toast('Export PNG terminé.'); } else toast('Export PNG impossible.', true); }, 'image/png'); }; image.onerror = () => toast('Impossible de générer le PNG.', true); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+
+      // Verrouillage plein écran quand le quota Freemium est épuisé (voir quota.js)
+      function showQuotaLock(message) {
+        const overlay = document.getElementById('quota-lock-overlay');
+        if (!overlay) { alert(message); return; }
+        document.getElementById('quota-lock-message').textContent = message;
+        overlay.style.display = 'flex';
+      }
+
+      function bindInputs() {
+        $('add-slide').addEventListener('click', () => { if (state.presentation.slides.length >= MAX_SLIDES) return toast('Limite de 30 slides atteinte.', true); snapshot(); state.presentation.slides.push({ id: uid('slide'), title: `Slide ${state.presentation.slides.length + 1}`, background: '#15233a', objects: [] }); state.selectedSlide = state.presentation.slides.length - 1; state.selectedObject = null; markChanged(); });
+        $('duplicate-slide').addEventListener('click', () => { const slide = currentSlide(); if (!slide || state.presentation.slides.length >= MAX_SLIDES) return; snapshot(); const copy = deepCopy(slide); copy.id = uid('slide'); copy.title = slide.title + ' — copie'; copy.objects.forEach(obj => obj.id = uid('obj')); copy.objects.forEach(obj => { if (obj.type === 'connector') { obj.from = ''; obj.to = ''; } }); state.presentation.slides.splice(state.selectedSlide + 1, 0, copy); state.selectedSlide++; state.selectedObject = null; markChanged(); });
+        $('delete-slide').addEventListener('click', () => { if (state.presentation.slides.length <= 1) return toast('Garde au moins une slide.', true); snapshot(); state.presentation.slides.splice(state.selectedSlide, 1); state.selectedSlide = clamp(state.selectedSlide, 0, state.presentation.slides.length - 1); state.selectedObject = null; markChanged('Slide supprimée'); });
+        $('new-presentation').addEventListener('click', () => { if (!confirm('Créer une présentation vide ? L’exemple actuel restera récupérable avec « Charger l’exemple ».')) return; snapshot(); state.presentation = blankPresentation(); state.selectedSlide = 0; state.selectedObject = null; markChanged(); });
+        $('sample-presentation').addEventListener('click', () => { snapshot(); state.presentation = samplePresentation(); state.selectedSlide = 0; state.selectedObject = null; markChanged('Exemple chargé'); });
+        $('export-json').addEventListener('click', exportJson); $('export-svg').addEventListener('click', exportSvg); $('export-png').addEventListener('click', exportPng); $('import-json').addEventListener('click', () => $('import-file').click()); $('auto-generate').addEventListener('click', generateAutomaticSlides); $('add-image').addEventListener('click', () => $('image-file').click()); $('image-file').addEventListener('change', async event => { const file = event.target.files?.[0]; event.target.value = ''; await addImageFromFile(file); }); document.querySelectorAll('[data-emoji]').forEach(button => button.addEventListener('click', () => addEmoji(button.dataset.emoji)));
+        $('import-file').addEventListener('change', async event => { const file = event.target.files?.[0]; event.target.value = ''; if (!file) return; if (file.size > 2 * 1024 * 1024) return toast('Fichier trop volumineux (2 Mo maximum).', true); try { const parsed = normalizePresentation(JSON.parse(await file.text())); snapshot(); state.presentation = parsed; state.selectedSlide = 0; state.selectedObject = null; markChanged('Fichier importé'); } catch (error) { toast(error.message || 'Import impossible.', true); } });
+        document.querySelectorAll('[data-tool]').forEach(btn => btn.addEventListener('click', () => setTool(btn.dataset.tool)));
+        $('presentation-title').addEventListener('input', event => { state.presentation.title = safeText(event.target.value, 100); markChanged(); }); $('slide-title').addEventListener('input', event => { const slide = currentSlide(); if (slide) { slide.title = safeText(event.target.value, 100) || 'Sans titre'; markChanged(); } }); $('slide-background').addEventListener('input', event => { const slide = currentSlide(); if (slide) { snapshot(); slide.background = validColor(event.target.value, '#15233a'); markChanged(); } });
+        const fieldMap = { 'object-text': ['text', v => safeText(v, 800)], 'object-alt': ['alt', v => safeText(v, 160)], 'object-x': ['x', v => clamp(Number(v) || 0, 0, SURFACE_W)], 'object-y': ['y', v => clamp(Number(v) || 0, 0, SURFACE_H)], 'object-w': ['w', v => clamp(Number(v) || 24, 24, SURFACE_W)], 'object-h': ['h', v => clamp(Number(v) || 20, 20, SURFACE_H)], 'object-color': ['color', v => validColor(v, '#ffffff')], 'object-fill': ['fill', v => validColor(v, '#ff7a2f')], 'object-size': ['fontSize', v => clamp(Number(v) || 32, 8, 120)], 'object-radius': ['radius', v => clamp(Number(v) || 0, 0, 60)] };
+        Object.entries(fieldMap).forEach(([id, [key, convert]]) => $(id).addEventListener('input', event => { const obj = selectedObject(); if (!obj) return; snapshot(); obj[key] = convert(event.target.value); markChanged(); })); $('object-bold').addEventListener('change', event => { const obj = selectedObject(); if (!obj) return; snapshot(); obj.bold = event.target.checked; markChanged(); }); $('delete-object').addEventListener('click', deleteSelectedObject);
+        surface.addEventListener('pointerdown', onSurfaceClick); window.addEventListener('pointermove', onPointerMove); window.addEventListener('pointerup', onPointerUp); window.addEventListener('keydown', onKeydown); window.addEventListener('resize', updateSurfaceScale);
+      }
+      async function init() { bindInputs(); try { state.db = await openDb(); const saved = await dbGet(state.db, 'current'); state.presentation = saved ? normalizePresentation(saved) : samplePresentation(); setStatus(saved ? 'Enregistré localement' : 'Exemple prêt', 'success'); render(); if (!saved) await save(); } catch (error) { state.presentation = samplePresentation(); setStatus('Mode temporaire', 'error'); render(); toast('IndexedDB est indisponible. Utilisation temporaire en mémoire.', true); } }
+      init();
+      // Verrouille l'éditeur de présentations pour le forfait Freemium (pas d'accès PowerPoint)
+      (function enforcePowerPointAccess() {
+        const check = CSQuota.canExportPowerPoint();
+        if (!check.allowed) showQuotaLock(check.message);
+      })();
+    })();
+  </script>
+</body>
+</html>

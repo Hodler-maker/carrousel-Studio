@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accueil — Carrousel Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5efe4;
+    --bg-2:#ffffff;
+    --orange:#ff7a2f;
+    --orange-deep:#ff5a1f;
+    --amber:#ffb547;
+    --green:#2f9e5c;
+    --red:#d94b3a;
+    --ink:#19140d;
+    --glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.88);
+    --border:rgba(25,20,13,0.09);
+    --border-soft:rgba(25,20,13,0.05);
+    --text:#1c160f;
+    --text-dim:#7c7060;
+    --text-faint:#ada08c;
+    --radius:20px;
+    --font-display:'Inter', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .orb{position:fixed; border-radius:50%; filter:blur(100px); opacity:0.4; z-index:0; pointer-events:none;}
+  .orb-1{width:560px; height:560px; background:var(--orange); top:-220px; left:-160px;}
+  .orb-2{width:480px; height:480px; background:var(--amber); bottom:-190px; right:-140px; opacity:0.35;}
+
+  .wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:72px 28px 100px;}
+
+  .hero{text-align:center; max-width:640px; margin:0 auto 56px;}
+  .hero .kicker{font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em; color:var(--orange-deep); margin-bottom:14px;}
+  .hero h1{font-size:clamp(32px,5vw,44px); font-weight:700; letter-spacing:-0.02em; line-height:1.1; color:var(--ink); margin-bottom:16px;}
+  .hero p{font-size:16px; color:var(--text-dim); line-height:1.6;}
+
+  .billing-toggle{display:flex; align-items:center; justify-content:center; gap:12px; margin:32px auto 0; font-size:13.5px; color:var(--text-dim);}
+  .billing-toggle .switch{position:relative; width:46px; height:26px; background:var(--border); border-radius:100px; cursor:pointer; transition:background .2s ease;}
+  .billing-toggle .switch::after{content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.15); transition:transform .2s ease;}
+  .billing-toggle .switch.on{background:var(--orange);}
+  .billing-toggle .switch.on::after{transform:translateX(20px);}
+  .billing-toggle .save-tag{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); background:rgba(255,122,47,0.1); padding:3px 9px; border-radius:100px;}
+
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:48px; align-items:stretch;}
+  @media (max-width:1040px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:640px){.grid{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    padding:28px 24px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .card:hover{transform:translateY(-4px);}
+  .card.is-active{border-color:var(--orange); box-shadow:0 0 0 2px rgba(255,122,47,0.25);}
+
+  .tier-label{font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; color:var(--text-faint); margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .tier-label .active-pill{font-family:var(--font-mono); font-size:10px; color:var(--green); background:rgba(47,158,92,0.12); padding:2px 8px; border-radius:100px;}
+  .tier-name{font-size:22px; font-weight:700; color:var(--ink); margin-bottom:4px;}
+  .tier-tagline{font-size:13px; color:var(--text-dim); margin-bottom:22px; min-height:36px; line-height:1.5;}
+
+  .price{display:flex; align-items:baseline; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
+  .price .amount{font-size:30px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;}
+  .price .period{font-size:13px; color:var(--text-dim);}
+  .price .price-usd{font-family:var(--font-mono); font-size:12px; color:var(--text-faint); width:100%;}
+  .card.top .price .price-usd{color:rgba(253,246,234,0.55);}
+  .price-note{font-size:12px; color:var(--text-faint); margin-bottom:24px; transition:opacity .2s ease;}
+
+  .cta{
+    display:block; text-align:center; text-decoration:none;
+    font-size:14px; font-weight:700; padding:12px 16px; border-radius:12px;
+    margin-bottom:26px; transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    border:none; width:100%; cursor:pointer; font-family:inherit;
+  }
+  .cta:hover{transform:translateY(-1px);}
+  .cta:active{transform:translateY(0);}
+  .cta.ghost{background:rgba(25,20,13,0.06); color:var(--ink); border:1px solid var(--border);}
+  .cta.solid{background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); color:#fff; box-shadow:0 10px 24px rgba(255,122,47,0.3);}
+  .cta.dark{background:linear-gradient(135deg, var(--ink), #2e2519); color:#fff; box-shadow:0 10px 24px rgba(25,20,13,0.35);}
+  .cta.is-selected{background:rgba(47,158,92,0.12); color:var(--green); border:1px solid rgba(47,158,92,0.35); box-shadow:none;}
+  .card.top .cta.is-selected{background:rgba(47,158,92,0.18); color:#a9f0c4; border:1px solid rgba(47,158,92,0.4);}
+
+  .features{list-style:none; display:flex; flex-direction:column; gap:11px; flex:1;}
+  .features li{font-size:13.5px; color:var(--text); display:flex; align-items:flex-start; gap:9px; line-height:1.45;}
+  .features li::before{content:''; flex-shrink:0; width:6px; height:6px; border-radius:50%; background:var(--orange); margin-top:6px;}
+  .features li.muted{color:var(--text-faint);}
+  .features li.muted::before{background:var(--text-faint);}
+
+  .card.featured{
+    background:var(--glass-strong);
+    border:1px solid rgba(255,122,47,0.35);
+    box-shadow:0 24px 60px -20px rgba(255,122,47,0.35);
+  }
+  .card.featured.is-active{border-color:var(--orange); box-shadow:0 24px 60px -20px rgba(255,122,47,0.35), 0 0 0 2px rgba(255,122,47,0.3);}
+  .featured .badge{
+    position:absolute; top:-13px; left:24px;
+    font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.02em;
+    background:linear-gradient(135deg, var(--orange-deep), var(--orange));
+    color:#fff; padding:5px 12px; border-radius:100px;
+    box-shadow:0 6px 16px rgba(255,90,31,0.35);
+  }
+
+  .card.top{background:linear-gradient(160deg, #221a10, #19140d); border:1px solid rgba(255,181,71,0.25);}
+  .card.top.is-active{border-color:var(--amber); box-shadow:0 0 0 2px rgba(255,181,71,0.3);}
+  .card.top .tier-name, .card.top .price .amount{color:#fdf6ea;}
+  .card.top .tier-label{color:var(--amber);}
+  .card.top .tier-tagline, .card.top .price .period, .card.top .price-note{color:rgba(253,246,234,0.55);}
+  .card.top .features li{color:rgba(253,246,234,0.85);}
+  .card.top .features li::before{background:var(--amber);}
+  .card.top .cta.ghost{background:rgba(255,255,255,0.08); color:#fdf6ea; border:1px solid rgba(255,255,255,0.15);}
+
+  .footnote{text-align:center; margin-top:52px; font-size:13px; color:var(--text-dim);}
+  .footnote a{color:var(--orange-deep); text-decoration:none; border-bottom:1px solid rgba(255,90,31,0.3);}
+
+  @media (prefers-reduced-motion:reduce){.card{transition:none;} .card:hover{transform:none;}}
+
+  /* ---------- Auth widget ---------- */
+  .auth-bar{position:relative; z-index:2; display:flex; justify-content:flex-end; max-width:1180px; margin:0 auto; padding:20px 28px 0;}
+  .auth-widget{display:flex; align-items:center; gap:8px;}
+  .auth-btn{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--ink); background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px; cursor:pointer; transition:border-color .15s ease, color .15s ease; box-sizing:border-box;}
+  .auth-btn:hover{border-color:var(--orange-deep); color:var(--orange-deep);}
+  .auth-user{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); background:var(--glass-strong); border:1px solid var(--border); padding:8px 12px; border-radius:12px; box-sizing:border-box;}
+  .auth-user b{color:var(--ink); font-weight:700;}
+  .auth-user .auth-signout{font-family:inherit; font-size:11px; color:var(--orange-deep); background:none; border:none; cursor:pointer; font-weight:600; padding:0;}
+
+  /* ---------- Modal de connexion ---------- */
+  .auth-modal-overlay{position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(25,20,13,0.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s;}
+  .auth-modal-overlay.is-open{opacity:1; visibility:visible;}
+  .auth-modal{position:relative; width:100%; max-width:380px; background:#fffdf9; border-radius:24px; padding:32px 28px 28px; box-shadow:0 30px 70px rgba(25,20,13,0.35); transform:scale(0.94) translateY(8px); opacity:0; transition:transform .3s cubic-bezier(.2,.9,.3,1.3), opacity .25s ease;}
+  .auth-modal-overlay.is-open .auth-modal{transform:scale(1) translateY(0); opacity:1;}
+  .auth-modal::before{content:''; position:absolute; inset:-1px; z-index:-1; border-radius:25px; padding:1px; background:linear-gradient(135deg, var(--orange-deep), var(--amber), transparent 60%); -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:0.6;}
+  .auth-modal-glow{position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:180px; height:100px; background:radial-gradient(circle, rgba(255,122,47,0.35), transparent 70%); filter:blur(20px); pointer-events:none; z-index:-1;}
+  .auth-modal-close{position:absolute; top:16px; right:16px; width:28px; height:28px; border-radius:50%; border:none; background:rgba(25,20,13,0.06); color:var(--text-dim); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s ease, color .15s ease;}
+  .auth-modal-close:hover{background:rgba(25,20,13,0.12); color:var(--ink);}
+  .auth-modal-icon{width:44px; height:44px; border-radius:14px; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:16px; box-shadow:0 10px 24px rgba(255,122,47,0.35);}
+  .auth-modal h2{font-size:20px; font-weight:700; color:var(--ink); margin-bottom:6px; letter-spacing:-0.01em;}
+  .auth-modal p.hint{font-size:13px; color:var(--text-dim); line-height:1.5; margin-bottom:22px;}
+  .auth-modal .field{margin-bottom:14px;}
+  .auth-modal .field label{display:block; font-size:11.5px; font-weight:700; color:var(--text-dim); margin-bottom:6px; font-family:var(--font-mono);}
+  .auth-modal .field input{width:100%; font-family:inherit; font-size:14px; padding:11px 13px; border-radius:12px; border:1px solid var(--border); background:#faf6ef; color:var(--ink); transition:border-color .15s ease, background .15s ease;}
+  .auth-modal .field input:focus{outline:none; border-color:var(--orange-deep); background:#fff;}
+  .auth-modal-error{font-size:12.5px; color:var(--red); min-height:16px; margin-bottom:8px;}
+  .auth-modal-submit{width:100%; margin-top:6px; font-family:inherit; font-size:14.5px; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); border:none; padding:13px 18px; border-radius:14px; cursor:pointer; box-shadow:0 12px 26px rgba(255,122,47,0.32); transition:transform .15s ease, opacity .15s ease;}
+  .auth-modal-submit:hover:not(:disabled){transform:translateY(-1px);}
+  .auth-modal-submit:disabled{opacity:0.6; cursor:default;}
+  .auth-user .auth-signout:hover{text-decoration:underline;}
+  .auth-admin-link{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); text-decoration:none; font-weight:700; white-space:nowrap; background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px;}
+  .auth-admin-link:hover{text-decoration:underline;}
+
+  /* ---------- Toast ---------- */
+  .cs-toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);}
+  .cs-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<script type="module" src="firebase-shared.js"></script>
+<script src="quota.js"></script>
+<div class="auth-bar">
+  <div class="auth-widget" id="auth-widget">
+    <button class="auth-btn" onclick="handleAuthClick()">Connexion / Inscription</button>
+  </div>
+</div>
+<div class="cs-toast" id="cs-toast"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">ACCUEIL</div>
+    <h1>Un palier pour chaque rythme de création</h1>
+    <p>Carrousels, visuels et présentations générés en quelques secondes. Commence gratuitement, monte en gamme quand ton usage grandit.</p>
+
+    <div class="billing-toggle">
+      <span>Mensuel</span>
+      <div class="switch" id="billing-switch" onclick="toggleBilling(this)"></div>
+      <span>Annuel</span>
+      <span class="save-tag">-20%</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- GENESIS -->
+    <div class="card" data-plan="genesis">
+      <div class="tier-label"><span>GENESIS</span></div>
+      <div class="tier-name">Freemium</div>
+      <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
+      <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
+      <div class="price-note">Aucune carte bancaire requise — teste-le directement dans le simulateur ci-dessous</div>
+      <a href="carrousel.html" class="cta ghost">Commencer gratuitement</a>
+      <ul class="features">
+        <li>1 visuel par semaine sur Visuel Studio</li>
+        <li>1 carrousel offert par mois</li>
+        <li>Export PDF standard</li>
+        <li class="muted">Pas d'accès PowerPoint</li>
+      </ul>
+    </div>
+
+    <!-- NODE -->
+    <div class="card" data-plan="node">
+      <div class="tier-label"><span>NODE</span></div>
+      <div class="tier-name">Basique</div>
+      <div class="tier-tagline">Pour publier du contenu chaque semaine, sans y penser.</div>
+      <div class="price">
+        <span class="amount price-monthly">1 700</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~3 $)</span>
+      </div>
+      <div class="price-note">soit ~1 350 FCFA/mois en annuel (~2,4 $)</div>
+      <button type="button" class="cta ghost" data-select="node">Choisir Basique</button>
+      <ul class="features">
+        <li>1 carrousel par semaine</li>
+        <li>1 visuel par jour</li>
+        <li>Export HD, sans filigrane</li>
+        <li class="muted">Pas d'accès PowerPoint</li>
+      </ul>
+    </div>
+
+    <!-- VALIDATOR (featured) -->
+    <div class="card featured" data-plan="validator">
+      <div class="badge">Le plus choisi</div>
+      <div class="tier-label"><span>VALIDATOR</span></div>
+      <div class="tier-name">Premium</div>
+      <div class="tier-tagline">Pour les créateurs actifs qui ne veulent plus compter.</div>
+      <div class="price">
+        <span class="amount price-monthly">4 500</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~8 $)</span>
+      </div>
+      <div class="price-note">soit ~3 600 FCFA/mois en annuel (~6,4 $)</div>
+      <button type="button" class="cta solid" data-select="validator">Passer en Premium</button>
+      <ul class="features">
+        <li>3 carrousels par semaine</li>
+        <li>Visuel Studio illimité</li>
+        <li>Personnalisation de marque (logo, couleurs)</li>
+        <li>1 présentation PowerPoint offerte / mois</li>
+      </ul>
+    </div>
+
+    <!-- SATOSHI -->
+    <div class="card top" data-plan="satoshi">
+      <div class="tier-label"><span>SATOSHI</span></div>
+      <div class="tier-name">Premium+</div>
+      <div class="tier-tagline">Pour les consultants et agences qui produisent en volume.</div>
+      <div class="price">
+        <span class="amount price-monthly">8 500</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~15 $)</span>
+      </div>
+      <div class="price-note">soit ~6 800 FCFA/mois en annuel (~12 $)</div>
+      <button type="button" class="cta ghost" data-select="satoshi">Passer en Premium+</button>
+      <ul class="features">
+        <li>5 carrousels par semaine</li>
+        <li>Visuel Studio illimité</li>
+        <li>2 présentations PowerPoint par semaine</li>
+        <li>Accès prioritaire aux nouvelles fonctionnalités</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footnote">Besoin de plus de volume pour ton équipe ou ton agence ? <a href="#">Contacte-nous</a>.</div>
+</div>
+
+<div class="auth-modal-overlay" id="auth-modal-overlay" onclick="if(event.target === this) closeAuthModal();">
+  <div class="auth-modal">
+    <div class="auth-modal-glow"></div>
+    <button type="button" class="auth-modal-close" onclick="closeAuthModal()" aria-label="Fermer">✕</button>
+    <div class="auth-modal-icon">✨</div>
+    <h2>Connexion ou inscription</h2>
+    <p class="hint">Entre ton email et un mot de passe. Pas encore de compte ? Il sera créé automatiquement.</p>
+    <div class="field">
+      <label for="auth-modal-email">Email</label>
+      <input type="email" id="auth-modal-email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter') document.getElementById('auth-modal-password').focus();">
+    </div>
+    <div class="field">
+      <label for="auth-modal-password">Mot de passe (6 caractères min.)</label>
+      <input type="password" id="auth-modal-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAuthModal();">
+    </div>
+    <div class="auth-modal-error" id="auth-modal-error"></div>
+    <button type="button" class="auth-modal-submit" id="auth-modal-submit" onclick="submitAuthModal()">Continuer</button>
+  </div>
+</div>
+
+<script>
+  /* ---------- Billing toggle ---------- */
+  // FCFA (mensuel / annuel équivalent) et équivalent USD affiché entre parenthèses
+  const monthly = {node:1700, validator:4500, satoshi:8500};
+  const annual  = {node:1350, validator:3600, satoshi:6800};
+  const monthlyUSD = {node:3, validator:8, satoshi:15};
+  const annualUSD  = {node:'2,4', validator:'6,4', satoshi:'12'};
+
+  function toggleBilling(el){
+    const isOn = el.classList.toggle('on');
+    document.querySelectorAll('.card').forEach(card => {
+      const key = card.getAttribute('data-plan');
+      if(!(key in monthly)) return;
+
+      const amountEl = card.querySelector('.price-monthly');
+      if(amountEl) amountEl.textContent = (isOn ? annual[key] : monthly[key]).toLocaleString('fr-FR');
+
+      const usdEl = card.querySelector('.price-usd');
+      if(usdEl) usdEl.textContent = `(~${isOn ? annualUSD[key] : monthlyUSD[key]} $)`;
+
+      const note = card.querySelector('.price-note');
+      if(note) note.style.opacity = isOn ? '0.35' : '1';
+    });
+  }
+
+  /* ---------- Plan definitions: mirrors exactly what each card's bullet list says ---------- */
+  const PLANS = {
+    genesis: {
+      label: 'GENESIS', name: 'Freemium', ctaText: 'Commencer gratuitement',
+      visuels:   { limit: 1, period: 'par semaine' },
+      carrousels:{ limit: 1, period: 'offert par mois' },
+      ppt:       { limit: 0, period: null },
+      exportHD: false,
+      brand: false
+    },
+    node: {
+      label: 'NODE', name: 'Basique', ctaText: 'Choisir Basique',
+      visuels:   { limit: 1, period: 'par jour' },
+      carrousels:{ limit: 1, period: 'par semaine' },
+      ppt:       { limit: 0, period: null },
+      exportHD: true,
+      brand: false
+    },
+    validator: {
+      label: 'VALIDATOR', name: 'Premium', ctaText: 'Passer en Premium',
+      visuels:   { limit: Infinity, period: 'illimité' },
+      carrousels:{ limit: 3, period: 'par semaine' },
+      ppt:       { limit: 1, period: 'par mois' },
+      exportHD: true,
+      brand: true
+    },
+    satoshi: {
+      label: 'SATOSHI', name: 'Premium+', ctaText: 'Passer en Premium+',
+      visuels:   { limit: Infinity, period: 'illimité' },
+      carrousels:{ limit: 5, period: 'par semaine' },
+      ppt:       { limit: 2, period: 'par semaine' },
+      exportHD: true,
+      brand: true
+    }
+  };
+
+  // Clé localStorage partagée avec carrousel.html pour que le forfait choisi soit repris sur l'outil.
+  const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
+
+  let currentPlan = null;
+
+  /* ---------- Plan selection ---------- */
+  document.querySelectorAll('[data-select]').forEach(btn => {
+    btn.addEventListener('click', () => selectPlan(btn.getAttribute('data-select')));
+  });
+
+  function applyPlanSelection(planId){
+    currentPlan = planId;
+
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.getAttribute('data-plan');
+      const btn = card.querySelector('[data-select]');
+      const isActive = id === planId;
+      card.classList.toggle('is-active', isActive);
+      if(btn){
+        btn.classList.toggle('is-selected', isActive);
+        btn.textContent = isActive ? '✓ Forfait actif' : PLANS[id].ctaText;
+      }
+      let pill = card.querySelector('.active-pill');
+      if(isActive && !pill){
+        pill = document.createElement('span');
+        pill.className = 'active-pill';
+        pill.textContent = 'Actif';
+        card.querySelector('.tier-label').appendChild(pill);
+      } else if(!isActive && pill){
+        pill.remove();
+      }
+    });
+  }
+
+  async function selectPlan(planId){
+    if(!csUser){
+      showToast('Connecte-toi d’abord pour choisir un forfait.');
+      await handleAuthClick();
+      if(!csUser) return; // connexion annulée ou échouée
+    }
+
+    const alreadyOwned = csUserData && csUserData.planId === planId;
+
+    if(planId === 'genesis'){
+      if(!alreadyOwned){
+        applyPlanSelection(planId);
+        localStorage.setItem(PLAN_STORAGE_KEY, planId);
+        window.CS.setUserPlan(csUser.uid, planId, 'self').catch(err => console.error(err));
+      }
+      window.location.href = 'carrousel.html';
+      return;
+    }
+
+    if(alreadyOwned){
+      // Ce forfait est déjà actif sur ce compte : direction l'outil, pas l'activation.
+      window.location.href = 'carrousel.html';
+      return;
+    }
+
+    // Forfait payant pas encore acquis : direction la fiche d'activation (contact + code WhatsApp).
+    window.location.href = `activation.html?plan=${encodeURIComponent(planId)}`;
+  }
+
+  // Reprend automatiquement le forfait déjà choisi (ici ou sur l'outil carrousel), sans faire défiler la page.
+  (function restoreStoredPlan(){
+    const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
+    if(storedPlan && PLANS[storedPlan]){
+      applyPlanSelection(storedPlan);
+    }
+  })();
+
+  function showToast(msg){
+    const t = document.getElementById('cs-toast');
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._csToastTimer);
+    window._csToastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  /* ---------- Auth (Firebase) ---------- */
+  let csUser = null;
+  let csUserData = null;
+  let csUnsubscribeUserDoc = null;
+
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function renderAuthWidget(){
+    const el = document.getElementById('auth-widget');
+    if(!el) return;
+    if(!csUser){
+      el.innerHTML = '<button class="auth-btn" onclick="handleAuthClick()">Connexion / Inscription</button>';
+      return;
+    }
+    const shortEmail = csUser.email.length > 24 ? csUser.email.slice(0, 21) + '…' : csUser.email;
+    const adminLink = (window.CS && window.CS.isAdmin(csUser)) ? '<a class="auth-admin-link" href="admin.html">Admin →</a>' : '';
+    el.innerHTML = `${adminLink}<span class="auth-user"><b>${escapeHtml(shortEmail)}</b><button class="auth-signout" onclick="handleSignOut()">Déconnexion</button></span>`;
+  }
+
+  let _authModalResolve = null;
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      const overlay = document.getElementById('auth-modal-overlay');
+      if(overlay && overlay.classList.contains('is-open')) closeAuthModal();
+    }
+  });
+
+  function handleAuthClick(){
+    return new Promise((resolve) => {
+      _authModalResolve = resolve;
+      openAuthModal();
+    });
+  }
+
+  function openAuthModal(){
+    const overlay = document.getElementById('auth-modal-overlay');
+    document.getElementById('auth-modal-email').value = '';
+    document.getElementById('auth-modal-password').value = '';
+    document.getElementById('auth-modal-error').textContent = '';
+    overlay.classList.add('is-open');
+    setTimeout(() => document.getElementById('auth-modal-email').focus(), 60);
+  }
+
+  function closeAuthModal(){
+    const overlay = document.getElementById('auth-modal-overlay');
+    overlay.classList.remove('is-open');
+    if(_authModalResolve){ _authModalResolve(); _authModalResolve = null; }
+  }
+
+  async function submitAuthModal(){
+    const email = document.getElementById('auth-modal-email').value.trim();
+    const password = document.getElementById('auth-modal-password').value;
+    const errorEl = document.getElementById('auth-modal-error');
+    const btn = document.getElementById('auth-modal-submit');
+    errorEl.textContent = '';
+
+    if(!email || !password){
+      errorEl.textContent = 'Renseigne ton email et ton mot de passe.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+    try{
+      try{
+        await window.CS.signInWithPassword(email, password);
+      }catch(err){
+        if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+          try{
+            await window.CS.signUpWithPassword(email, password);
+          }catch(signUpErr){
+            if(signUpErr.code === 'auth/email-already-in-use'){
+              throw new Error('Mot de passe incorrect.');
+            }
+            throw signUpErr;
+          }
+        }else{
+          throw err;
+        }
+      }
+      showToast('Connecté ✓');
+      document.getElementById('auth-modal-overlay').classList.remove('is-open');
+      if(_authModalResolve){ _authModalResolve(); _authModalResolve = null; }
+    }catch(err){
+      console.error(err);
+      errorEl.textContent = err.message || "Connexion impossible, réessaie.";
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Continuer';
+    }
+  }
+
+  async function handleSignOut(){
+    try{
+      await window.CS.signOutUser();
+      showToast('Déconnecté.');
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  // Pont XBooster (2 oct. 2026) : si la page est ouverte avec ?xb=<jeton>
+  // (cas de l'iframe intégrée dans /dashboard/carrousel-studio sur
+  // XBooster), on échange ce jeton contre une connexion automatique avant
+  // de laisser le flux d'authentification normal (initAuth) prendre le
+  // relais. Si le jeton est absent, invalide ou déjà utilisé, on se
+  // contente de laisser la personne se connecter manuellement comme avant
+  // — le pont est un raccourci, jamais un point de blocage.
+  async function tryXBoosterBridge(){
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('xb');
+    if(!token) return;
+
+    // Retiré de l'URL tout de suite, avant même de savoir si l'échange
+    // réussit — pas de raison de le laisser traîner dans l'historique de
+    // navigation de l'iframe plus longtemps que nécessaire.
+    params.delete('xb');
+    const query = params.toString();
+    const cleanUrl = window.location.pathname + (query ? `?${query}` : '') + window.location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+
+    try{
+      await window.CS.signInWithXBoosterBridge(token);
+      showToast('Connecté automatiquement depuis XBooster ✓');
+    }catch(err){
+      console.error(err);
+      showToast(err.message || 'Connexion automatique depuis XBooster impossible — connecte-toi manuellement.');
+    }
+  }
+
+  function initAuth(){
+    window.CS.onAuthChange(async (user) => {
+      csUser = user;
+      if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
+      if(user){
+        await window.CS.ensureUserDoc(user);
+        csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
+          csUserData = data;
+          window.csCurrentPlanId = data.planId || 'genesis';
+          if(data.planId && PLANS[data.planId]){
+            localStorage.setItem(PLAN_STORAGE_KEY, data.planId);
+            applyPlanSelection(data.planId);
+          }
+        });
+      }else{
+        csUserData = null;
+        window.csCurrentPlanId = 'genesis';
+      }
+      renderAuthWidget();
+    });
+  }
+
+  async function bootstrapAuth(){
+    await tryXBoosterBridge();
+    initAuth();
+  }
+  if(window.CS){ bootstrapAuth(); } else { window.addEventListener('cs:ready', bootstrapAuth, { once:true }); }
+</script>
+</body>
+
+</html>

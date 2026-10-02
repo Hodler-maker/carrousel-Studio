@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activer mon forfait — Carrousel Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5efe4;
+    --bg-2:#ffffff;
+    --orange:#ff7a2f;
+    --orange-deep:#ff5a1f;
+    --amber:#ffb547;
+    --green:#2f9e5c;
+    --whatsapp:#25d366;
+    --ink:#19140d;
+    --glass-strong:rgba(255,255,255,0.88);
+    --border:rgba(25,20,13,0.09);
+    --text:#1c160f;
+    --text-dim:#7c7060;
+    --radius:20px;
+    --font-display:'Inter', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; overflow-x:hidden; position:relative;}
+  .orb{position:fixed; border-radius:50%; filter:blur(100px); opacity:0.4; z-index:0; pointer-events:none;}
+  .orb-1{width:560px; height:560px; background:var(--orange); top:-220px; left:-160px;}
+  .orb-2{width:480px; height:480px; background:var(--amber); bottom:-190px; right:-140px; opacity:0.35;}
+
+  .auth-bar{position:relative; z-index:2; display:flex; justify-content:flex-end; max-width:640px; margin:0 auto; padding:20px 28px 0;}
+  .auth-widget{display:flex; align-items:center; gap:8px;}
+  .auth-btn{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--ink); background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px; cursor:pointer;}
+  .auth-btn:hover{border-color:var(--orange-deep); color:var(--orange-deep);}
+  .auth-user{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); background:var(--glass-strong); border:1px solid var(--border); padding:8px 12px; border-radius:12px;}
+  .auth-user b{color:var(--ink); font-weight:700;}
+  .auth-user .auth-signout{font-family:inherit; font-size:11px; color:var(--orange-deep); background:none; border:none; cursor:pointer; font-weight:600; padding:0;}
+
+  .wrap{position:relative; z-index:1; max-width:560px; margin:0 auto; padding:24px 28px 100px;}
+  .hero{text-align:center; margin:0 auto 32px;}
+  .hero .kicker{font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em; color:var(--orange-deep); margin-bottom:14px;}
+  .hero h1{font-size:clamp(26px,5vw,34px); font-weight:700; letter-spacing:-0.02em; line-height:1.15; color:var(--ink); margin-bottom:14px;}
+  .hero p{font-size:15px; color:var(--text-dim); line-height:1.6;}
+
+  .card{background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius); padding:28px; box-shadow:0 16px 40px rgba(25,20,13,0.08);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--text-dim); margin-bottom:6px;}
+  .field input{width:100%; font-family:inherit; font-size:14px; padding:11px 13px; border-radius:12px; border:1px solid var(--border); background:#fbf8f2; color:var(--ink);}
+  .field input:disabled{color:var(--text-dim); background:rgba(25,20,13,0.04);}
+  .field input:focus{outline:none; border-color:var(--orange-deep);}
+
+  .whatsapp-box{background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.25); border-radius:16px; padding:18px; margin:24px 0; text-align:center;}
+  .whatsapp-box p{font-size:13.5px; color:var(--text-dim); margin-bottom:12px; line-height:1.5;}
+  .whatsapp-box strong{color:var(--ink);}
+
+  .cta{display:inline-flex; align-items:center; justify-content:center; gap:6px; width:100%; text-align:center; font-family:inherit; font-size:14.5px; font-weight:700; padding:13px 18px; border-radius:14px; border:none; cursor:pointer; text-decoration:none; transition:transform .15s ease;}
+  .cta:hover{transform:translateY(-1px);}
+  .cta.whatsapp{background:var(--whatsapp); color:#fff; box-shadow:0 10px 24px rgba(37,211,102,0.3);}
+  .cta.solid{background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); color:#fff; box-shadow:0 10px 24px rgba(255,122,47,0.3);}
+  .cta.dark{background:linear-gradient(135deg, var(--ink), #2e2519); color:#fff; box-shadow:0 10px 24px rgba(25,20,13,0.35); margin-top:6px;}
+
+  .login-required{text-align:center; padding:12px 0;}
+  .login-required p{color:var(--text-dim); font-size:14px; margin-bottom:18px;}
+
+  .back-link{display:block; text-align:center; margin-top:20px; font-family:var(--font-mono); font-size:12.5px; color:var(--text-dim); text-decoration:none;}
+  .back-link:hover{color:var(--orange-deep);}
+
+  .cs-toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);}
+  .cs-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<script type="module" src="firebase-shared.js"></script>
+
+<div class="auth-bar">
+  <div class="auth-widget" id="auth-widget">
+    <button class="auth-btn" onclick="handleAuthClick()">Se connecter</button>
+  </div>
+</div>
+<div class="cs-toast" id="cs-toast"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">ACTIVATION DE FORFAIT</div>
+    <h1 id="plan-title">Active ton forfait</h1>
+    <p>Renseigne tes infos, contacte-nous sur WhatsApp pour le paiement, puis valide avec le code qu'on t'enverra.</p>
+  </div>
+
+  <div class="card">
+    <div class="login-required" id="login-required" style="display:none;">
+      <p>Connecte-toi d'abord pour activer un forfait.</p>
+      <button class="cta solid" onclick="handleAuthClick()">Se connecter</button>
+    </div>
+
+    <div id="activation-content" style="display:none;">
+      <div class="field">
+        <label for="act-nom">Nom</label>
+        <input type="text" id="act-nom" placeholder="Ton nom" autocomplete="family-name">
+      </div>
+      <div class="field">
+        <label for="act-prenom">Prénom(s)</label>
+        <input type="text" id="act-prenom" placeholder="Ton/tes prénom(s)" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="act-email">Email (utilisé à l'inscription)</label>
+        <input type="email" id="act-email" disabled>
+      </div>
+
+      <div class="whatsapp-box">
+        <p>Contacte-nous sur WhatsApp pour activer ton forfait <strong id="plan-name-inline">choisi</strong> — on te communique le code d'activation après paiement.</p>
+        <a id="whatsapp-link" class="cta whatsapp" href="#" target="_blank" rel="noopener">💬 Contacter sur WhatsApp — +228 91 05 61 74</a>
+      </div>
+
+      <div class="field">
+        <label for="act-code">Code d'activation reçu</label>
+        <input type="text" id="act-code" placeholder="EX: LANCEMENT10" style="text-transform:uppercase;">
+      </div>
+      <button class="cta dark" onclick="handleActivate()">Valider mon forfait</button>
+    </div>
+
+    <a class="back-link" href="accueil.html">← Retour aux forfaits</a>
+  </div>
+</div>
+
+<script>
+  const PLAN_NAMES = { genesis: 'Freemium', node: 'Basique', validator: 'Premium', satoshi: 'Premium+' };
+  const WHATSAPP_NUMBER = '22891056174';
+
+  const params = new URLSearchParams(window.location.search);
+  const requestedPlan = params.get('plan');
+  const planName = PLAN_NAMES[requestedPlan] || 'choisi';
+
+  document.getElementById('plan-title').textContent = `Active ton forfait ${planName}`;
+  document.getElementById('plan-name-inline').textContent = planName;
+
+  function buildWhatsappLink(){
+    const message = `Bonjour, je souhaite activer le forfait ${planName} sur Carrousel Studio.`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
+  document.getElementById('whatsapp-link').href = buildWhatsappLink();
+
+  function showToast(msg){
+    const t = document.getElementById('cs-toast');
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._csToastTimer);
+    window._csToastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  let csUser = null;
+
+  function renderAuthWidget(user){
+    const el = document.getElementById('auth-widget');
+    if(!el) return;
+    if(!user){
+      el.innerHTML = '<button class="auth-btn" onclick="handleAuthClick()">Se connecter</button>';
+      return;
+    }
+    const shortEmail = user.email.length > 24 ? user.email.slice(0, 21) + '…' : user.email;
+    el.innerHTML = `<span class="auth-user"><b>${escapeHtml(shortEmail)}</b><button class="auth-signout" onclick="handleSignOut()">Déconnexion</button></span>`;
+  }
+
+  function updateAccessState(user){
+    document.getElementById('login-required').style.display = user ? 'none' : 'block';
+    document.getElementById('activation-content').style.display = user ? 'block' : 'none';
+    if(user){
+      document.getElementById('act-email').value = user.email;
+    }
+  }
+
+  async function handleAuthClick(){
+    const email = window.prompt("Ton email :");
+    if(!email) return;
+    const password = window.prompt("Ton mot de passe (6 caractères min.) :");
+    if(!password) return;
+    try{
+      try{
+        await window.CS.signInWithPassword(email, password);
+      }catch(err){
+        if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+          try{
+            await window.CS.signUpWithPassword(email, password);
+          }catch(signUpErr){
+            if(signUpErr.code === 'auth/email-already-in-use'){
+              throw new Error('Mot de passe incorrect.');
+            }
+            throw signUpErr;
+          }
+        }else{
+          throw err;
+        }
+      }
+      showToast('Connecté ✓');
+    }catch(err){
+      console.error(err);
+      showToast(err.message || "Connexion impossible, réessaie.");
+    }
+  }
+
+  async function handleSignOut(){
+    try{
+      await window.CS.signOutUser();
+      showToast('Déconnecté.');
+      setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
+    }catch(err){ console.error(err); }
+  }
+
+  async function handleActivate(){
+    if(!csUser){
+      showToast('Connecte-toi d’abord.');
+      return;
+    }
+    const nom = document.getElementById('act-nom').value.trim();
+    const prenom = document.getElementById('act-prenom').value.trim();
+    const code = document.getElementById('act-code').value.trim();
+
+    if(!nom || !prenom){
+      showToast('Renseigne ton nom et ton/tes prénom(s).');
+      return;
+    }
+    if(!code){
+      showToast("Entre le code d'activation reçu par WhatsApp.");
+      return;
+    }
+
+    try{
+      await window.CS.updateContactInfo(csUser.uid, { firstName: prenom, lastName: nom });
+      const planId = await window.CS.redeemPromoCode(csUser.uid, code);
+      showToast(`Forfait ${PLAN_NAMES[planId] || planId} activé ✓ Redirection...`);
+      setTimeout(() => { window.location.href = 'carrousel.html'; }, 1200);
+    }catch(err){
+      console.error(err);
+      showToast(err.message || 'Code invalide, vérifie et réessaie.');
+    }
+  }
+
+  function csInitAuth(){
+    window.CS.onAuthChange(async (user) => {
+      csUser = user;
+      renderAuthWidget(user);
+      if(user){
+        await window.CS.ensureUserDoc(user);
+      }
+      updateAccessState(user);
+    });
+  }
+  if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+</script>
+</body>
+</html>

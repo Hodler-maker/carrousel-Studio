@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visuel Studio — Carrousel Studio</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="theme-color" content="#ff7a2f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Manrope:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&family=Raleway:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5efe4;
+    --bg-2:#ffffff;
+    --orange:#ff7a2f;
+    --orange-deep:#ff5a1f;
+    --amber:#ffb547;
+    --ink:#19140d;
+    --glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.88);
+    --border:rgba(25,20,13,0.09);
+    --border-soft:rgba(25,20,13,0.05);
+    --text:#1c160f;
+    --text-dim:#7c7060;
+    --text-faint:#ada08c;
+    --radius:20px;
+    --font-display:'Inter', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-visual:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; overflow-x:hidden; position:relative;}
+.orb{position:fixed; border-radius:50%; filter:blur(100px); opacity:0.45; z-index:0; pointer-events:none;}
+.orb-1{width:560px; height:560px; background:var(--orange); top:-200px; left:-160px; animation:drift1 22s ease-in-out infinite;}
+.orb-2{width:480px; height:480px; background:var(--amber); bottom:-170px; right:-130px; opacity:0.4; animation:drift2 26s ease-in-out infinite;}
+.orb-3{width:320px; height:320px; background:var(--orange-deep); top:35%; left:58%; opacity:0.2; animation:drift1 30s ease-in-out infinite reverse;}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,60px) scale(1.08);}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-50px,-30px) scale(1.1);}}
+.noise{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.025;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.app{position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 28px 80px;}
+header{display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:16px;}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg, var(--orange), var(--amber)); position:relative; flex-shrink:0; box-shadow:0 0 24px rgba(255,122,47,0.45);}
+.brand-mark::after{content:''; position:absolute; inset:8px; border-radius:5px; background:var(--ink);}
+.brand-mark::before{content:''; position:absolute; inset:13px; border-radius:3px; background:linear-gradient(135deg, var(--orange), var(--amber)); animation:pulseMark 2.4s ease-in-out infinite;}
+@keyframes pulseMark{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.6; transform:scale(0.8);}}
+.brand-text h1{font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);}
+.brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
+.home-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:700; color:var(--text); text-decoration:none; background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:11px; transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .25s ease;}
+.home-link::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,122,47,.22) 48%, transparent 70%); transform:translateX(-125%); animation:homeSheen 4.5s ease-in-out infinite;}
+.home-link:hover{transform:translateY(-2px) scale(1.03); background:#fff; border-color:rgba(255,122,47,0.4); box-shadow:0 10px 24px -8px rgba(255,122,47,.35);}
+.home-link:active{transform:translateY(0) scale(0.97);}
+.home-link:focus-visible{outline:3px solid rgba(255,122,47,.45); outline-offset:3px;}
+.home-arrow{display:inline-block; animation:homeArrowNudge 1.8s ease-in-out infinite;}
+.home-link:hover .home-arrow{animation-duration:.7s;}
+@keyframes homeSheen{0%,15%{transform:translateX(-125%);} 55%,100%{transform:translateX(125%);}}
+@keyframes homeArrowNudge{0%,100%{transform:translateX(0);} 50%{transform:translateX(-3px);}}
+@media (prefers-reduced-motion:reduce){.home-link::before{display:none;} .home-arrow{animation:none;}}
+.layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
+@media (max-width:980px){.layout{grid-template-columns:1fr;}}
+.glass{background:var(--glass); border:1px solid var(--border); border-radius:var(--radius); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:0 20px 60px -25px rgba(120,70,20,0.25);}
+.panel{padding:24px; position:sticky; top:24px; animation:fadeUp .6s cubic-bezier(.16,1,.3,1);}
+@keyframes fadeUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);}}
+@media (max-width:980px){.panel{position:static;}}
+.panel h2{font-family:var(--font-display); font-size:15px; font-weight:600; margin-bottom:4px;}
+.panel .sub{font-size:12.5px; color:var(--text-dim); margin-bottom:18px; line-height:1.5;}
+label{display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; margin-top:18px;}
+label:first-of-type{margin-top:0;}
+textarea{width:100%; min-height:120px; resize:vertical; background:rgba(255,255,255,0.55); border:1px solid var(--border); border-radius:14px; padding:14px; color:var(--text); font-family:var(--font-body); font-size:13.5px; line-height:1.55; transition:border-color .2s, box-shadow .2s;}
+textarea::placeholder{color:var(--text-faint);}
+textarea:focus{outline:none; border-color:rgba(255,122,47,0.5); box-shadow:0 0 0 3px rgba(255,122,47,0.12);}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.field-hint{font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.4;}
+select, input[type=text]{width:100%; background:rgba(255,255,255,0.55); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text); font-family:var(--font-body); font-size:13px; cursor:pointer;}
+select:focus, input[type=text]:focus{outline:none; border-color:rgba(255,122,47,0.5);}
+.type-toggle{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.type-btn{min-height:44px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.55); color:var(--text-dim); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .18s ease;}
+.type-btn:hover{background:#fff;}
+.type-btn.active{background:linear-gradient(135deg, var(--ink), #2e2519); border-color:transparent; color:#fff; box-shadow:0 8px 20px rgba(25,20,13,0.32);}
+.toolbar-btn{background:var(--glass-strong); border:1px solid var(--border); color:var(--text); font-family:var(--font-body); font-size:12.5px; font-weight:500; padding:8px 14px; border-radius:10px; cursor:pointer; transition:background .2s, border-color .2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; touch-action:manipulation;}
+.toolbar-btn:hover{background:#fff; border-color:rgba(25,20,13,0.16);}
+.toolbar-btn.download-btn{position:relative; background:linear-gradient(135deg, var(--ink), #2e2519); border:none; color:#fff; font-weight:600; box-shadow:0 8px 22px rgba(25,20,13,0.35); transition:transform .15s ease, box-shadow .25s ease; padding:14px 20px; font-size:14px;}
+.toolbar-btn.download-btn:hover{transform:translateY(-1px) scale(1.015); box-shadow:0 10px 28px rgba(25,20,13,0.45);}
+.toolbar-btn.download-btn:active{transform:translateY(0) scale(0.98);}
+.toolbar-btn.remove-btn{color:#b83f28; border-color:rgba(184,63,40,0.22); background:rgba(220,60,40,0.06);}
+.toolbar-btn.remove-btn:hover{background:rgba(220,60,40,0.12); border-color:rgba(184,63,40,0.4);}
+.toolbar-btn.icon-btn{padding:8px 10px; min-width:40px;}
+.toolbar-btn.align-btn.active{background:linear-gradient(135deg, var(--orange-deep), var(--orange)); border-color:transparent; color:#fff;}
+.text-format-row{display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-top:8px;}
+.text-format-group{display:inline-flex; align-items:center; gap:4px;}
+.text-format-group .format-label{font-size:11px; color:var(--text-faint); margin-right:2px;}
+.ui-icon{width:16px; height:16px; display:inline-block; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.download-icon{display:inline-flex; align-items:center; animation:bounceDown 1.8s ease-in-out infinite;}
+@keyframes bounceDown{0%,100%{transform:translateY(0);} 50%{transform:translateY(3px);}}
+.image-upload-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.image-upload-row .toolbar-btn{flex:1;}
+/* preview */
+.preview-wrap{min-height:70vh; display:flex; flex-direction:column; align-items:center;}
+.visual-stage{display:flex; align-items:center; justify-content:center; width:100%;}
+.visual-viewport{width:100%; max-width:420px; position:relative;}
+.visual-viewport.ratio-square{max-width:420px;}
+.visual-frame{
+aspect-ratio:4/5; width:100%; border-radius:26px; overflow:hidden; position:relative;
+border:1px solid var(--border); box-shadow:0 30px 70px -20px rgba(120,60,10,0.35);
+animation:frameIn .45s cubic-bezier(.16,1,.3,1);
+}
+.visual-frame.ratio-square{aspect-ratio:1/1;}
+@keyframes frameIn{from{opacity:0; transform:translateY(14px) scale(0.98);} to{opacity:1; transform:translateY(0) scale(1);}}
+.visual-inner{position:absolute; inset:0; padding:9%; display:flex; flex-direction:column; font-family:var(--font-visual); background-size:cover; background-position:center;}
+.visual-overlay{position:absolute; inset:0; z-index:0;}
+.theme-sunset .visual-overlay{background:radial-gradient(circle at 85% 8%, rgba(255,255,255,0.35), transparent 40%), radial-gradient(circle at 10% 100%, rgba(120,30,0,0.35), transparent 55%), linear-gradient(150deg, var(--amber) 0%, var(--orange) 45%, var(--orange-deep) 100%); color:#fff;}
+.theme-editorial .visual-overlay{background:linear-gradient(145deg, #f2e7d5 0%, #d9c09b 100%); color:#211b14;}
+.theme-midnight .visual-overlay{background:radial-gradient(circle at 85% 10%, rgba(80,168,255,0.35), transparent 42%), linear-gradient(145deg, #16243d 0%, #07101f 100%); color:#f5f9ff;}
+.theme-signal .visual-overlay{background:linear-gradient(145deg, #6c35e8 0%, #2d176d 100%); color:#fff;}
+.theme-yellow-black .visual-overlay{background:radial-gradient(circle at 88% 10%, rgba(255,255,255,0.38), transparent 36%), linear-gradient(145deg, #ffe566 0%, #f4c928 52%, #e5a900 100%); color:#11110f;}
+.visual-inner.theme-sunset,.visual-inner.theme-midnight,.visual-inner.theme-signal{color:#fff;}
+.visual-inner.theme-editorial,.visual-inner.theme-yellow-black{color:#211b14;}
+.visual-inner.has-bg-image .visual-overlay{opacity:0.72;}
+.visual-inner.has-bg-image{cursor:grab;}
+.visual-frame.bg-dragging .visual-inner.has-bg-image{cursor:grabbing;}
+.visual-content{position:relative; z-index:2; display:flex; flex-direction:column; height:100%;}
+.visual-textblock{position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column; cursor:grab; touch-action:none; padding:4px; margin:-4px; border-radius:8px; transition:background .15s ease;}
+.visual-textblock:hover{background:rgba(255,255,255,0.06);}
+.visual-textblock:active,.visual-textblock.dragging{cursor:grabbing; background:rgba(255,255,255,0.1); outline:2px dashed rgba(255,122,47,0.85); outline-offset:4px;}
+.visual-eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; display:flex; align-items:center; gap:8px;}
+.visual-eyebrow::before{content:''; width:16px; height:1px; background:currentColor; display:inline-block;}
+.visual-eyebrow:empty{display:none;}
+.visual-quote-mark{font-family:var(--font-display); font-size:56px; font-weight:800; line-height:0.6; opacity:0.5; margin-top:auto;}
+.visual-title{font-family:var(--font-visual); font-weight:700; line-height:1.2; letter-spacing:-0.01em; margin-top:12px; font-size:calc(23px * var(--title-scale,1)); white-space:pre-line; text-align:var(--visual-align,left);}
+.type-citation .visual-title{margin-top:10px;}
+.type-annonce .visual-title{margin-top:auto; font-size:calc(26px * var(--title-scale,1));}
+.visual-subtitle{font-size:calc(14px * var(--subtitle-scale,1)); margin-top:16px; line-height:1.5; opacity:0.9; white-space:pre-line; text-align:var(--visual-align,left);}
+.visual-quote-mark{text-align:var(--visual-align,left);}
+.visual-spacer{flex:1;}
+.visual-footer{margin-top:auto; padding-top:16px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(0,0,0,0.08);}
+.theme-sunset .visual-footer,.theme-midnight .visual-footer,.theme-signal .visual-footer{border-top-color:rgba(255,255,255,0.18);}
+.visual-author{font-size:calc(13px * var(--subtitle-scale,1)); font-weight:600;}
+.visual-brand{font-family:var(--font-mono); font-size:10.5px; opacity:0.65; letter-spacing:0.05em;}
+.visual-footer:empty,.visual-footer.is-empty{display:none;}
+#export-stage .visual-eyebrow{font-size:30.9px; gap:20.6px;}
+#export-stage .visual-eyebrow::before{width:41.1px;}
+#export-stage .visual-quote-mark{font-size:144px;}
+#export-stage .type-citation .visual-title{font-size:calc(59.14px * var(--title-scale,1)); margin-top:25.7px;}
+#export-stage .type-annonce .visual-title{font-size:calc(66.86px * var(--title-scale,1));}
+#export-stage .visual-subtitle{font-size:calc(36px * var(--subtitle-scale,1)); margin-top:41.1px;}
+#export-stage .visual-footer{padding-top:41.1px;}
+#export-stage .visual-author{font-size:calc(33.43px * var(--subtitle-scale,1));}
+#export-stage .visual-brand{font-size:27px;}
+#export-stage .visual-inner{padding:9%;}
+.actions-row{display:flex; justify-content:center; margin-top:20px; width:100%; max-width:420px;}
+.format-toggle{display:flex; gap:8px; justify-content:center; margin-top:14px;}
+.format-btn{padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:var(--glass-strong); font-family:var(--font-mono); font-size:11px; color:var(--text-dim); cursor:pointer; transition:all .18s ease;}
+.format-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+.empty-state{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:60px 24px; color:var(--text-dim); max-width:420px; margin:0 auto;}
+.empty-icon{width:48px; height:48px; border-radius:50%; background:rgba(255,122,47,0.12); display:flex; align-items:center; justify-content:center; color:var(--orange-deep);}
+.empty-state h3{font-family:var(--font-display); font-size:16px; color:var(--ink);}
+.empty-state p{font-size:12.5px; line-height:1.5;}
+.toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(140%); z-index:60; display:flex; align-items:center; gap:8px; background:var(--ink); color:#fff; padding:12px 18px; border-radius:100px; font-size:13px; box-shadow:0 16px 40px rgba(0,0,0,0.3); transition:transform .3s cubic-bezier(.16,1,.3,1);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast-dot{width:7px; height:7px; border-radius:50%; background:var(--orange);}
+.fireflies{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+.firefly{position:absolute; width:6px; height:6px; border-radius:50%; background:#ffd76a; opacity:.12; box-shadow:0 0 8px 2px rgba(255,215,106,.58), 0 0 24px rgba(255,167,54,.22);}
+.firefly:nth-child(1){left:12%; top:23%; --duration:8.5s; --delay:-1.2s;}
+.firefly:nth-child(2){left:28%; top:74%; width:5px; height:5px; --duration:10.5s; --delay:-5.6s;}
+.firefly:nth-child(3){left:46%; top:17%; width:4px; height:4px; --duration:7.8s; --delay:-3.4s;}
+.firefly:nth-child(4){left:63%; top:66%; --duration:11s; --delay:-7.2s;}
+.firefly:nth-child(5){left:78%; top:28%; width:5px; height:5px; --duration:9.4s; --delay:-2.7s;}
+@media (prefers-reduced-motion:no-preference){.firefly{animation:fireflyFloat var(--duration) ease-in-out var(--delay) infinite;}}
+@keyframes fireflyFloat{0%,100%{opacity:.06; transform:translate3d(0,10px,0) scale(.72);} 32%{opacity:.62; transform:translate3d(16px,-12px,0) scale(1);} 58%{opacity:.2; transform:translate3d(-12px,-32px,0) scale(.82);} 78%{opacity:.75; transform:translate3d(9px,-48px,0) scale(.92);}}
+@media (prefers-reduced-motion:reduce){.firefly{opacity:.1;}}
+/* Petit menu de statut de forfait (badge + compteurs) */
+.plan-menu{position:relative;}
+.plan-menu-btn{display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg, #ff5a1f, #ff7a2f 55%, #ffb547); border:none; padding:8px 12px; border-radius:100px; cursor:pointer; box-shadow:0 6px 16px rgba(255,122,47,.3);}
+.plan-menu-btn .chev{font-size:9px; transition:transform .15s ease;}
+.plan-menu.is-open .plan-menu-btn .chev{transform:rotate(180deg);}
+.plan-menu-panel{position:absolute; top:calc(100% + 8px); right:0; width:230px; background:#fff; border:1px solid rgba(25,20,13,.1); border-radius:14px; box-shadow:0 16px 40px rgba(25,20,13,.18); padding:14px; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease, visibility .15s;}
+.plan-menu.is-open .plan-menu-panel{opacity:1; visibility:visible; transform:translateY(0);}
+.plan-menu-row{margin-bottom:10px;}
+.plan-menu-row:last-child{margin-bottom:0;}
+.plan-menu-row .row-label{display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#19140d; margin-bottom:5px;}
+.plan-menu-row .row-count{font-weight:400; color:#7c7060;}
+.plan-menu-bar{height:5px; background:rgba(25,20,13,.08); border-radius:100px; overflow:hidden;}
+.plan-menu-bar-fill{height:100%; background:linear-gradient(90deg, #ff5a1f, #ffb547); border-radius:100px;}
+.plan-menu-bar-fill.is-full{background:#d94b3a;}
+.plan-menu-row.is-locked .row-label{color:#ada08c;}
+.plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#7c7060; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
+.plan-menu-link:hover{color:#ff5a1f;}
+</style>
+</head>
+<body>
+<script type="module" src="firebase-shared.js"></script>
+<script src="quota.js"></script>
+<div id="cs-auth-bar" style="position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+  <div id="cs-plan-menu"></div>
+  <div id="cs-auth-widget"></div>
+</div>
+<div id="cs-toast" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#19140d; color:#fff; font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1000; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);"></div>
+<script>
+function csShowToast(msg){
+  const t = document.getElementById('cs-toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._csAuthToastTimer);
+  window._csAuthToastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 3200);
+}
+function csRenderAuthWidget(user){
+  const el = document.getElementById('cs-auth-widget');
+  if(!el) return;
+  if(!user){
+    el.innerHTML = '<button onclick="csHandleAuthClick()" style="font-family:inherit; font-size:11.5px; font-weight:700; color:#19140d; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:9px 14px; border-radius:12px; cursor:pointer;">Se connecter</button>';
+    return;
+  }
+  const shortEmail = user.email.length > 22 ? user.email.slice(0, 19) + '…' : user.email;
+  el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#7c7060; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${escapeHtml(shortEmail)}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
+}
+async function csHandleAuthClick(){
+  const email = window.prompt("Ton email :");
+  if(!email) return;
+  const password = window.prompt("Ton mot de passe (6 caractères min.) :");
+  if(!password) return;
+  try{
+    try{
+      await window.CS.signInWithPassword(email, password);
+    }catch(err){
+      if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+        try{
+          await window.CS.signUpWithPassword(email, password);
+        }catch(signUpErr){
+          if(signUpErr.code === 'auth/email-already-in-use'){
+            throw new Error('Mot de passe incorrect.');
+          }
+          throw signUpErr;
+        }
+      }else{
+        throw err;
+      }
+    }
+    csShowToast('Connecté ✓');
+  }catch(err){
+    console.error(err);
+    csShowToast(err.message || "Connexion impossible, réessaie.");
+  }
+}
+async function csHandleSignOut(){
+  try{
+    await window.CS.signOutUser();
+    csShowToast('Déconnecté.');
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
+  }catch(err){ console.error(err); }
+}
+let csUser = null;
+let csUnsubscribeUserDoc = null;
+function csInitAuth(){
+  window.CS.completeSignInIfLink().catch(err => console.error(err));
+  window.CS.onAuthChange(async (user) => {
+    csUser = user;
+    csRenderAuthWidget(user);
+    if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
+    if(user){
+      await window.CS.ensureUserDoc(user);
+      csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
+        window.csCurrentPlanId = window.CS.isAdmin(user) ? 'admin' : (data.planId || 'genesis');
+        renderPlanMenu(true);
+      });
+    }else{
+      window.csCurrentPlanId = 'genesis';
+      renderPlanMenu(false);
+    }
+  });
+}
+if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+
+function planMenuRowHTML(label, status){
+  if(status.unlimited){
+    return `<div class="plan-menu-row"><div class="row-label">${label} <span class="row-count">Illimité ✓</span></div></div>`;
+  }
+  if(status.limit === 0){
+    return `<div class="plan-menu-row is-locked"><div class="row-label">${label} <span class="row-count">Non inclus</span></div></div>`;
+  }
+  const pct = Math.min(100, Math.round((status.used / status.limit) * 100));
+  const isFull = status.remaining <= 0;
+  return `
+    <div class="plan-menu-row">
+      <div class="row-label">${label} <span class="row-count">${status.remaining}/${status.limit} · ${status.period}</span></div>
+      <div class="plan-menu-bar"><div class="plan-menu-bar-fill ${isFull ? 'is-full' : ''}" style="width:${pct}%;"></div></div>
+    </div>`;
+}
+
+function togglePlanMenu(){
+  const el = document.getElementById('cs-plan-menu');
+  const menu = el.querySelector('.plan-menu');
+  if(menu) menu.classList.toggle('is-open');
+}
+
+document.addEventListener('click', (e) => {
+  const el = document.getElementById('cs-plan-menu');
+  if(el && !el.contains(e.target)){
+    const menu = el.querySelector('.plan-menu');
+    if(menu) menu.classList.remove('is-open');
+  }
+});
+
+function renderPlanMenu(loggedIn){
+  const el = document.getElementById('cs-plan-menu');
+  if(!el) return;
+  if(!loggedIn || typeof CSQuota === 'undefined'){
+    el.innerHTML = '';
+    return;
+  }
+  const summary = CSQuota.getSummary();
+  el.innerHTML = `
+    <div class="plan-menu">
+      <button type="button" class="plan-menu-btn" onclick="togglePlanMenu()">${escapeHtml(summary.planName)} <span class="chev">▾</span></button>
+      <div class="plan-menu-panel">
+        ${planMenuRowHTML('Visuels', summary.visuels)}
+        ${planMenuRowHTML('Carrousels', summary.carrousels)}
+        ${planMenuRowHTML('PowerPoint', summary.ppt)}
+        <a class="plan-menu-link" href="accueil.html">Gérer mon forfait →</a>
+      </div>
+    </div>`;
+}
+</script>
+  <div class="orb orb-1" aria-hidden="true"></div>
+<div class="orb orb-2" aria-hidden="true"></div>
+<div class="orb orb-3" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
+<div class="fireflies" aria-hidden="true">
+  <span class="firefly"></span><span class="firefly"></span><span class="firefly"></span><span class="firefly"></span><span class="firefly"></span>
+</div>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <h1>Visuel Studio</h1>
+        <span>TEXTE → VISUEL UNIQUE</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+      <a class="home-link" href="carrousel.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
+    </div>
+  </header>
+<div class="layout">
+    <!-- LEFT PANEL -->
+    <div class="glass panel">
+      <h2>Créer un visuel</h2>
+      <p class="sub">Rédige une citation ou une annonce et génère un visuel unique prêt pour LinkedIn ou Instagram.</p>
+      <label>Type de visuel</label>
+      <div class="type-toggle">
+        <button type="button" class="type-btn active" id="type-citation-btn" onclick="setType('citation')">Citation</button>
+        <button type="button" class="type-btn" id="type-annonce-btn" onclick="setType('annonce')">Annonce</button>
+      </div>
+
+      <label for="v-eyebrow">Étiquette (optionnel)</label>
+      <input type="text" id="v-eyebrow" maxlength="40" placeholder="Ex : Citation du jour" oninput="render()">
+
+      <label for="v-text" id="v-text-label">Texte de la citation</label>
+      <textarea id="v-text" maxlength="280" placeholder="Colle ou écris ta citation ici..." oninput="render()"></textarea>
+
+      <label for="v-subtitle" id="v-subtitle-label">Auteur (optionnel)</label>
+      <input type="text" id="v-subtitle" maxlength="120" placeholder="Ex : Satoshi Nakamoto" oninput="render()">
+
+      <label for="v-handle">Ton handle (optionnel)</label>
+      <input type="text" id="v-handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" oninput="render()" onblur="this.value=normalizeHandle(this.value); render()">
+
+      <label>Mise en forme du texte</label>
+      <div class="text-format-row">
+        <div class="text-format-group" aria-label="Taille du titre">
+          <span class="format-label">Titre</span>
+          <button type="button" class="toolbar-btn icon-btn" onclick="adjustTextScale('title',-0.1)" title="Réduire la taille du titre" aria-label="Réduire la taille du titre">A−</button>
+          <button type="button" class="toolbar-btn icon-btn" onclick="adjustTextScale('title',0.1)" title="Agrandir la taille du titre" aria-label="Agrandir la taille du titre">A+</button>
+        </div>
+        <div class="text-format-group" aria-label="Taille du sous-texte">
+          <span class="format-label">Sous-texte</span>
+          <button type="button" class="toolbar-btn icon-btn" onclick="adjustTextScale('subtitle',-0.1)" title="Réduire la taille du sous-texte" aria-label="Réduire la taille du sous-texte">A−</button>
+          <button type="button" class="toolbar-btn icon-btn" onclick="adjustTextScale('subtitle',0.1)" title="Agrandir la taille du sous-texte" aria-label="Agrandir la taille du sous-texte">A+</button>
+        </div>
+      </div>
+      <div class="text-format-row" aria-label="Alignement du texte">
+        <button type="button" class="toolbar-btn icon-btn align-btn active" id="align-left-btn" onclick="setVisualAlign('left')" title="Aligner le texte à gauche" aria-label="Aligner le texte à gauche"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h13"></path></svg></button>
+        <button type="button" class="toolbar-btn icon-btn align-btn" id="align-center-btn" onclick="setVisualAlign('center')" title="Centrer le texte" aria-label="Centrer le texte"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M7 12h10"></path><path d="M5.5 18h13"></path></svg></button>
+        <button type="button" class="toolbar-btn icon-btn align-btn" id="align-right-btn" onclick="setVisualAlign('right')" title="Aligner le texte à droite" aria-label="Aligner le texte à droite"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M10 12h10"></path><path d="M7 18h13"></path></svg></button>
+        <button type="button" class="toolbar-btn icon-btn" onclick="resetTextPosition()" title="Remettre le texte à sa position d’origine" aria-label="Réinitialiser la position du texte">↺</button>
+      </div>
+      <p class="field-hint">Ajuste la taille du titre et du sous-texte, leur alignement, et glisse le texte directement dans l’aperçu pour le repositionner.</p>
+
+      <label>Image de fond (optionnel)</label>
+      <div class="image-upload-row">
+        <button type="button" class="toolbar-btn" id="bg-image-btn" onclick="document.getElementById('bg-image-file').click()">＋ Image</button>
+        <button type="button" class="toolbar-btn icon-btn" id="bg-image-reset-btn" style="display:none;" onclick="resetBgPosition()" title="Recentrer l’image" aria-label="Recentrer l’image">↺</button>
+        <button type="button" class="toolbar-btn remove-btn" id="bg-image-remove-btn" style="display:none;" onclick="removeBgImage()">Retirer</button>
+      </div>
+      <input id="bg-image-file" type="file" accept="image/png,image/jpeg,image/webp" style="display:none">
+      <p class="field-hint">L'image passe en fond avec un léger voile pour garder le texte lisible. Glisse directement l’image dans l’aperçu (en dehors du texte) pour la repositionner.</p>
+
+      <div class="row">
+        <div>
+          <label>Format</label>
+          <select id="v-ratio" onchange="render()">
+            <option value="4-5">Portrait 4:5</option>
+            <option value="1-1">Carré 1:1</option>
+          </select>
+        </div>
+        <div>
+          <label for="v-template">Template</label>
+          <select id="v-template" onchange="render()">
+            <option value="sunset">Sunset — orange</option>
+            <option value="editorial">Editorial — beige</option>
+            <option value="midnight">Midnight — bleu nuit</option>
+            <option value="signal">Signal — violet</option>
+            <option value="yellow-black">Jaune &amp; Noir</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="v-font">Police</label>
+      <select id="v-font" onchange="render()">
+        <option value="inter">Inter — moderne</option>
+        <option value="roboto">Roboto — universelle</option>
+        <option value="open-sans">Open Sans — très lisible</option>
+        <option value="montserrat">Montserrat — impact</option>
+        <option value="poppins">Poppins — géométrique</option>
+        <option value="lato">Lato — chaleureuse</option>
+        <option value="manrope">Manrope — contemporaine</option>
+        <option value="rubik">Rubik — arrondie</option>
+        <option value="raleway">Raleway — élégante</option>
+        <option value="playfair-display">Playfair Display — éditoriale</option>
+        <option value="merriweather">Merriweather — serif lisible</option>
+        <option value="source-sans-3">Source Sans 3 — sobre</option>
+      </select>
+    </div>
+
+    <!-- RIGHT PREVIEW -->
+    <div class="preview-wrap">
+      <div class="visual-stage">
+        <div class="visual-viewport" id="visual-viewport">
+          <div class="visual-frame" id="visual-frame">
+            <div class="visual-inner theme-sunset type-citation" id="visual-inner">
+              <div class="visual-overlay" id="visual-bg"></div>
+              <div class="visual-content">
+                <div class="visual-textblock" id="visual-textblock" title="Glisse pour déplacer le texte" aria-label="Déplacer le texte">
+                  <div class="visual-eyebrow" id="out-eyebrow"></div>
+                  <div class="visual-quote-mark" id="out-quote-mark">”</div>
+                  <div class="visual-title" id="out-title">Colle ou écris ta citation ici...</div>
+                  <div class="visual-subtitle" id="out-subtitle"></div>
+                </div>
+                <div class="visual-spacer"></div>
+                <div class="visual-footer" id="out-footer">
+                  <span class="visual-author" id="out-author"></span>
+                  <span class="visual-brand" id="out-brand"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="format-toggle">
+        <span class="field-hint">Le visuel se met à jour en direct à mesure que tu écris.</span>
+      </div>
+
+      <div class="actions-row">
+        <button class="toolbar-btn download-btn" style="width:100%;" onclick="exportVisual()">
+          <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger le visuel (PNG)
+        </button>
+      </div>
+    </div>
+</div>
+</div>
+<div id="export-stage"></div>
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const AVAILABLE_FONTS = {
+  inter: "'Inter', sans-serif",
+  roboto: "'Roboto', sans-serif",
+  'open-sans': "'Open Sans', sans-serif",
+  montserrat: "'Montserrat', sans-serif",
+  poppins: "'Poppins', sans-serif",
+  lato: "'Lato', sans-serif",
+  manrope: "'Manrope', sans-serif",
+  rubik: "'Rubik', sans-serif",
+  raleway: "'Raleway', sans-serif",
+  'playfair-display': "'Playfair Display', serif",
+  merriweather: "'Merriweather', serif",
+  'source-sans-3': "'Source Sans 3', sans-serif",
+};
+
+let currentType = 'citation';
+let bgImageData = null;
+let titleScale = 1;
+let subtitleScale = 1;
+let visualAlign = 'left';
+let textOffset = { x: 0, y: 0 };
+let textDragState = null;
+let bgOffset = { x: 0, y: 0 };
+let bgDragState = null;
+
+function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+function adjustTextScale(field, delta){
+  if(field === 'title'){
+    titleScale = clamp(Math.round((titleScale + delta) * 100) / 100, 0.5, 2.2);
+  } else {
+    subtitleScale = clamp(Math.round((subtitleScale + delta) * 100) / 100, 0.5, 2.2);
+  }
+  render();
+  showToast(delta > 0 ? 'Texte agrandi' : 'Texte réduit');
+}
+
+function setVisualAlign(align){
+  visualAlign = align === 'center' || align === 'right' ? align : 'left';
+  document.getElementById('align-left-btn')?.classList.toggle('active', visualAlign === 'left');
+  document.getElementById('align-center-btn')?.classList.toggle('active', visualAlign === 'center');
+  document.getElementById('align-right-btn')?.classList.toggle('active', visualAlign === 'right');
+  render();
+  showToast('Alignement mis à jour');
+}
+
+function applyTextOffset(){
+  const block = document.getElementById('visual-textblock');
+  if(!block) return;
+  block.style.left = `${textOffset.x}%`;
+  block.style.top = `${textOffset.y}%`;
+}
+
+function resetTextPosition(){
+  textOffset = { x: 0, y: 0 };
+  applyTextOffset();
+  showToast('Position du texte réinitialisée');
+}
+
+function onTextBlockPointerDown(event){
+  event.preventDefault();
+  const block = event.currentTarget;
+  const rect = block.closest('.visual-frame').getBoundingClientRect();
+  textDragState = { startX: event.clientX, startY: event.clientY, originX: textOffset.x, originY: textOffset.y, frameWidth: rect.width, frameHeight: rect.height };
+  block.classList.add('dragging');
+  block.setPointerCapture?.(event.pointerId);
+}
+
+function onTextBlockPointerMove(event){
+  if(!textDragState) return;
+  const dx = (event.clientX - textDragState.startX) / textDragState.frameWidth * 100;
+  const dy = (event.clientY - textDragState.startY) / textDragState.frameHeight * 100;
+  textOffset.x = clamp(textDragState.originX + dx, -20, 20);
+  textOffset.y = clamp(textDragState.originY + dy, -15, 60);
+  applyTextOffset();
+}
+
+function onTextBlockPointerUp(){
+  if(!textDragState) return;
+  textDragState = null;
+  document.getElementById('visual-textblock')?.classList.remove('dragging');
+  showToast('Texte déplacé');
+}
+
+document.getElementById('visual-textblock')?.addEventListener('pointerdown', onTextBlockPointerDown);
+window.addEventListener('pointermove', onTextBlockPointerMove);
+window.addEventListener('pointerup', onTextBlockPointerUp);
+window.addEventListener('pointercancel', onTextBlockPointerUp);
+
+function applyBgOffset(){
+  const inner = document.getElementById('visual-inner');
+  if(!inner || !bgImageData) return;
+  const px = clamp(50 + bgOffset.x, 0, 100);
+  const py = clamp(50 + bgOffset.y, 0, 100);
+  inner.style.backgroundPosition = `${px}% ${py}%`;
+}
+
+function resetBgPosition(){
+  bgOffset = { x: 0, y: 0 };
+  applyBgOffset();
+  showToast('Image recentrée');
+}
+
+function onBgPointerDown(event){
+  if(!bgImageData) return;
+  if(event.target.closest('.visual-textblock')) return;
+  event.preventDefault();
+  const frame = event.currentTarget;
+  const rect = frame.getBoundingClientRect();
+  bgDragState = { startX: event.clientX, startY: event.clientY, originX: bgOffset.x, originY: bgOffset.y, frameWidth: rect.width, frameHeight: rect.height };
+  frame.classList.add('bg-dragging');
+  frame.setPointerCapture?.(event.pointerId);
+}
+
+function onBgPointerMove(event){
+  if(!bgDragState) return;
+  const dx = (event.clientX - bgDragState.startX) / bgDragState.frameWidth * 100;
+  const dy = (event.clientY - bgDragState.startY) / bgDragState.frameHeight * 100;
+  bgOffset.x = clamp(bgDragState.originX - dx, -50, 50);
+  bgOffset.y = clamp(bgDragState.originY - dy, -50, 50);
+  applyBgOffset();
+}
+
+function onBgPointerUp(){
+  if(!bgDragState) return;
+  bgDragState = null;
+  document.getElementById('visual-frame')?.classList.remove('bg-dragging');
+  showToast('Image repositionnée');
+}
+
+document.getElementById('visual-frame')?.addEventListener('pointerdown', onBgPointerDown);
+window.addEventListener('pointermove', onBgPointerMove);
+window.addEventListener('pointerup', onBgPointerUp);
+window.addEventListener('pointercancel', onBgPointerUp);
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function normalizeHandle(value){
+  const handle = String(value || '').trim().replace(/\s+/g, ' ');
+  if(!handle) return '';
+  return handle.startsWith('@') ? handle : `@${handle}`;
+}
+
+function setType(type){
+  currentType = type === 'annonce' ? 'annonce' : 'citation';
+  document.getElementById('type-citation-btn').classList.toggle('active', currentType === 'citation');
+  document.getElementById('type-annonce-btn').classList.toggle('active', currentType === 'annonce');
+  const textLabel = document.getElementById('v-text-label');
+  const subLabel = document.getElementById('v-subtitle-label');
+  const textArea = document.getElementById('v-text');
+  const subInput = document.getElementById('v-subtitle');
+  if(currentType === 'citation'){
+    textLabel.textContent = 'Texte de la citation';
+    subLabel.textContent = 'Auteur (optionnel)';
+    if(!textArea.value) textArea.placeholder = 'Colle ou écris ta citation ici...';
+    subInput.placeholder = 'Ex : Satoshi Nakamoto';
+  } else {
+    textLabel.textContent = 'Titre de l’annonce';
+    subLabel.textContent = 'Sous-texte / appel à l’action (optionnel)';
+    textArea.placeholder = 'Ex : On lance Visuel Studio 🎉';
+    subInput.placeholder = 'Ex : Disponible dès aujourd’hui, lien en bio.';
+  }
+  render();
+}
+
+function render(){
+  const inner = document.getElementById('visual-inner');
+  const frame = document.getElementById('visual-frame');
+  const bg = document.getElementById('visual-bg');
+
+  const template = document.getElementById('v-template').value || 'sunset';
+  const font = document.getElementById('v-font').value || 'inter';
+  const ratio = document.getElementById('v-ratio').value || '4-5';
+
+  document.documentElement.style.setProperty('--font-visual', AVAILABLE_FONTS[font] || AVAILABLE_FONTS.inter);
+  document.documentElement.style.setProperty('--title-scale', titleScale);
+  document.documentElement.style.setProperty('--subtitle-scale', subtitleScale);
+  document.documentElement.style.setProperty('--visual-align', visualAlign);
+
+  inner.className = `visual-inner theme-${template} type-${currentType}`;
+  frame.classList.toggle('ratio-square', ratio === '1-1');
+  document.getElementById('visual-viewport').classList.toggle('ratio-square', ratio === '1-1');
+
+  if(bgImageData){
+    inner.classList.add('has-bg-image');
+    inner.style.backgroundImage = `url(${bgImageData})`;
+    applyBgOffset();
+  } else {
+    inner.classList.remove('has-bg-image');
+    inner.style.backgroundImage = 'none';
+    inner.style.backgroundPosition = '';
+  }
+
+  const eyebrow = document.getElementById('v-eyebrow').value.trim();
+  const mainText = document.getElementById('v-text').value.trim();
+  const subtitle = document.getElementById('v-subtitle').value.trim();
+  const handle = normalizeHandle(document.getElementById('v-handle').value);
+
+  document.getElementById('out-eyebrow').innerHTML = escapeHtml(eyebrow);
+
+  const quoteMarkEl = document.getElementById('out-quote-mark');
+  quoteMarkEl.style.display = currentType === 'citation' ? '' : 'none';
+
+  const titleEl = document.getElementById('out-title');
+  titleEl.innerHTML = escapeHtml(mainText) || (currentType === 'citation'
+    ? 'Colle ou écris ta citation ici...'
+    : 'Écris le titre de ton annonce...');
+
+  document.getElementById('out-subtitle').innerHTML = escapeHtml(subtitle);
+
+  const authorEl = document.getElementById('out-author');
+  authorEl.innerHTML = currentType === 'citation' && subtitle ? `— ${escapeHtml(subtitle)}` : '';
+  if(currentType === 'annonce') authorEl.innerHTML = '';
+
+  const brandEl = document.getElementById('out-brand');
+  brandEl.textContent = handle;
+
+  const footer = document.getElementById('out-footer');
+  footer.classList.toggle('is-empty', !authorEl.textContent && !brandEl.textContent);
+  applyTextOffset();
+}
+
+document.getElementById('bg-image-file').addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if(!file) return;
+  if(file.size > 4 * 1024 * 1024){ showToast('Image trop lourde (max 4 Mo).'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    bgImageData = reader.result;
+    bgOffset = { x: 0, y: 0 };
+    document.getElementById('bg-image-remove-btn').style.display = '';
+    document.getElementById('bg-image-reset-btn').style.display = '';
+    render();
+    showToast('Image de fond ajoutée ✓');
+  };
+  reader.readAsDataURL(file);
+});
+
+function removeBgImage(){
+  bgImageData = null;
+  bgOffset = { x: 0, y: 0 };
+  document.getElementById('bg-image-remove-btn').style.display = 'none';
+  document.getElementById('bg-image-reset-btn').style.display = 'none';
+  render();
+}
+
+let toastTimer = null;
+function showToast(message){
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = message;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+async function exportVisual(){
+  const mainText = document.getElementById('v-text').value.trim();
+  if(!mainText){ showToast('Ajoute un texte avant d’exporter.'); return; }
+  if(typeof CSQuota !== 'undefined'){
+    const quotaCheck = CSQuota.canExportVisuel();
+    if(!quotaCheck.allowed){ showToast(quotaCheck.message); return; }
+  }
+  showToast('Export en cours...');
+  try{
+    if(document.fonts?.ready) await document.fonts.ready;
+    const ratio = document.getElementById('v-ratio').value || '4-5';
+    const width = 1080;
+    const height = ratio === '1-1' ? 1080 : 1350;
+
+    const stage = document.getElementById('export-stage');
+    const clone = document.getElementById('visual-inner').cloneNode(true);
+    clone.style.position = 'static';
+    const wrapper = document.createElement('div');
+    wrapper.style.width = `${width}px`;
+    wrapper.style.height = `${height}px`;
+    wrapper.style.position = 'relative';
+    wrapper.style.overflow = 'hidden';
+    clone.style.position = 'absolute';
+    clone.style.inset = '0';
+    wrapper.appendChild(clone);
+    stage.innerHTML = '';
+    stage.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
+      scale: 2,
+      width, height,
+      backgroundColor: null,
+      useCORS: true,
+      logging: false,
+    });
+    stage.innerHTML = '';
+
+    const link = document.createElement('a');
+    const namePart = mainText.slice(0, 30).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'visuel';
+    link.download = `visuel-studio-${namePart}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    if(typeof CSQuota !== 'undefined'){ CSQuota.recordVisuelExport(); renderPlanMenu(!!csUser); }
+    showToast('Visuel exporté ✓');
+  }catch(err){
+    console.error(err);
+    showToast('L’export a échoué, réessaie.');
+  }
+}
+
+render();
+</script>
+</body>
+</html>

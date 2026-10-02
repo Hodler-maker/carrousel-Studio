@@ -1,0 +1,133 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Règles Firestore recommandées — Carrousel Studio
+// Audit de sécurité du 2 octobre 2026 (Shabal / XBooster)
+//
+// CONTEXTE : ce fichier n'existait pas dans le zip fourni. Tout le contrôle
+// d'accès de l'app (qui est admin, qui peut changer un forfait, qui peut
+// lire les comptes des autres) est actuellement écrit UNIQUEMENT côté
+// client (isAdmin(), quota.js, admin.html) : ça guide l'interface, mais ça
+// n'empêche RIEN — n'importe qui peut ouvrir la console du navigateur et
+// appeler directement window.CS.adminSetUserPlan(...) ou
+// window.CS.setUserPlan(...) sur son propre compte. Sans règles Firestore
+// qui refusent ça côté serveur, n'importe quel visiteur inscrit peut se
+// mettre lui-même en forfait Premium+ gratuitement, ou lire/modifier la
+// fiche de tous les autres utilisateurs.
+//
+// → Ce fichier doit être déployé AVANT le lancement (Firebase Console :
+//   Firestore Database > Règles, coller ce contenu et Publier — ou
+//   `firebase deploy --only firestore:rules` si le projet est relié à la
+//   CLI Firebase). Sans ça, le reste de l'app reste exploitable même si le
+//   code front est irréprochable.
+//
+// LIMITE ASSUMÉE : sans backend dédié, on ne peut pas garantir à 100% le
+// compteur "usedCount" d'un code promo en cas d'usage strictement
+// simultané par plusieurs personnes au tout dernier usage autorisé (une
+// microscopique fenêtre de course). Vu le volume attendu au lancement,
+// c'est un risque acceptable — à migrer vers une Cloud Function si le
+// système de codes promo prend de l'ampleur.
+// ─────────────────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Compte admin unique, identifié par email — reflète ADMIN_EMAIL dans
+    // firebase-shared.js. Si cet email change un jour, il faut le mettre à
+    // jour ICI AUSSI (le code front seul ne suffit pas).
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'hodler1206@gmail.com';
+    }
+
+    function unchangedField(field) {
+      return !(field in request.resource.data.diff(resource.data).affectedKeys());
+    }
+
+    // ---------- users/{uid} ----------
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Création : uniquement sa propre fiche, et uniquement avec les
+      // valeurs par défaut (pas moyen de s'auto-attribuer un forfait payant
+      // dès la création du compte).
+      allow create: if isOwner(uid)
+        && request.resource.data.planId == 'genesis'
+        && request.resource.data.planSource == 'default';
+
+      // Mise à jour par l'utilisateur lui-même : deux cas seulement.
+      allow update: if isAdmin() || (
+        isOwner(uid) && (
+          // Cas 1 — coordonnées de contact (formulaire d'activation) :
+          // aucun champ sensible touché.
+          (unchangedField('planId') && unchangedField('planSource')
+            && unchangedField('promoCode'))
+          ||
+          // Cas 2 — activation d'un code promo valide : le nouveau planId
+          // doit correspondre EXACTEMENT au forfait réellement défini par
+          // le document promoCodes correspondant, qui doit exister, être
+          // actif, non expiré et pas déjà épuisé. Empêche un utilisateur
+          // de simplement écrire planId:"satoshi" sans code valide.
+          (
+            request.resource.data.planSource == 'promo'
+            && request.resource.data.promoCode is string
+            && exists(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode))
+            && get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.active != false
+            && (
+              !('expiresAt' in get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data)
+              || get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.expiresAt == null
+              || get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.expiresAt > request.time
+            )
+            && (
+              !('maxUses' in get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data)
+              || get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.maxUses == null
+              || get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.usedCount
+                 < get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.maxUses
+            )
+            && request.resource.data.planId
+               == get(/databases/$(database)/documents/promoCodes/$(request.resource.data.promoCode)).data.planId
+          )
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------- promoCodes/{code} ----------
+    match /promoCodes/{code} {
+      // "get" (lecture d'un document précis, par son id exact) est
+      // nécessaire pour que la validation d'un code côté client
+      // fonctionne — mais "list" (parcourir toute la collection) reste
+      // interdit aux non-admins, pour empêcher d'énumérer tous les codes
+      // promo valides existants.
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, delete: if isAdmin();
+
+      // Mise à jour : l'admin peut tout changer (désactiver un code...).
+      // Un utilisateur non-admin ne peut faire qu'UNE seule chose : faire
+      // avancer usedCount de +1 exactement, et seulement sur un code
+      // encore valide — c'est le pendant obligatoire du "Cas 2" ci-dessus
+      // dans /users/{uid} (la transaction de redeemPromoCode() touche les
+      // deux documents en même temps). Toute autre tentative de
+      // modification (changer planId, maxUses, active, etc.) est refusée.
+      allow update: if isAdmin() || (
+        isSignedIn()
+        && resource.data.active != false
+        && (!('expiresAt' in resource.data) || resource.data.expiresAt == null
+            || resource.data.expiresAt > request.time)
+        && (!('maxUses' in resource.data) || resource.data.maxUses == null
+            || resource.data.usedCount < resource.data.maxUses)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount'])
+        && request.resource.data.usedCount == resource.data.usedCount + 1
+      );
+    }
+  }
+}
