@@ -60,6 +60,17 @@
   @media (max-width:1040px){.grid{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:640px){.grid{grid-template-columns:1fr;}}
 
+  /* Effet cartes empilées adapté aux trois panneaux d’accueil */
+  .access-grid .card{isolation:isolate; overflow:hidden; transform-style:preserve-3d; box-shadow:0 8px 24px rgba(25,20,13,0.06), 0 2px 0 rgba(255,122,47,0.12); transition:transform .45s cubic-bezier(.23,1,.32,1), box-shadow .45s ease, border-color .35s ease;}
+  .access-grid .card::before{content:''; position:absolute; z-index:-1; inset:7px -5px -5px 7px; border:1px solid rgba(255,122,47,0.28); border-radius:calc(var(--radius) - 2px); background:linear-gradient(135deg,rgba(255,181,71,0.14),rgba(255,122,47,0.035) 55%,rgba(255,90,31,0.12)); transform:translateZ(-1px); transition:transform .45s cubic-bezier(.23,1,.32,1), opacity .35s ease; opacity:.65; pointer-events:none;}
+  .access-grid .card::after{content:''; position:absolute; z-index:0; inset:-60% auto -60% -45%; width:32%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.62),transparent); transform:translateX(-180%) rotate(18deg); transition:transform .85s cubic-bezier(.23,1,.32,1); pointer-events:none;}
+  .access-grid .card > *{position:relative; z-index:1;}
+  .access-grid .card:hover{transform:perspective(900px) translateY(-7px) rotateX(2deg) rotateY(-1.5deg); border-color:rgba(255,122,47,0.48); box-shadow:0 22px 42px rgba(255,122,47,0.16), 0 7px 0 rgba(255,122,47,0.13);}
+  .access-grid .card:hover::before{transform:translate(5px,5px) translateZ(-1px) rotate(1deg); opacity:1;}
+  .access-grid .card:hover::after{transform:translateX(560%) rotate(18deg);}
+  .access-grid .card:nth-child(2):hover{transform:perspective(900px) translateY(-7px) rotateX(2deg) rotateY(1.5deg);}
+  @media (prefers-reduced-motion:reduce){.access-grid .card,.access-grid .card::before,.access-grid .card::after{transition:none;} .access-grid .card:hover,.access-grid .card:nth-child(2):hover{transform:none;}}
+
   .card{
     background:var(--glass);
     border:1px solid var(--border);
