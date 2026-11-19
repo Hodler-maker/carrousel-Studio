@@ -82,7 +82,8 @@
     .access-grid:hover .card,.access-grid:focus-within .card{animation-play-state:paused;}
     .access-grid .card:hover{transform:translateY(-5px);}
   }
-  @media (prefers-reduced-motion:reduce){.access-grid .card,.access-grid .card::before,.access-grid .card::after{transition:none;} .access-grid .card:hover,.access-grid .card:nth-child(2):hover{transform:none;} .access-grid .card{animation:none !important;} @media (min-width:1041px){.access-grid .card{position:relative; inset:auto; width:auto; height:auto; transform:none; margin:0;} .access-grid{display:grid; height:auto; perspective:none;}}}
+  @media (prefers-reduced-motion:reduce){.access-grid .card,.access-grid .card::before,.access-grid .card::after{transition:none;} .access-grid .card:hover,.access-grid .card:nth-child(2):hover{transform:none;} .access-grid .card{animation:none !important;}}
+  @media (min-width:1041px) and (prefers-reduced-motion:reduce){.access-grid .card{position:relative; inset:auto; width:auto; height:auto; transform:none; margin:0;} .access-grid{display:grid; height:auto; perspective:none;}}
 
   .card{
     background:var(--glass);
