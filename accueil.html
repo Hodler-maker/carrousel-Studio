@@ -168,6 +168,23 @@
   .auth-admin-link{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); text-decoration:none; font-weight:700; white-space:nowrap; background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px;}
   .auth-admin-link:hover{text-decoration:underline;}
 
+  /* Bouton d’inscription animé — style Uiverse.io by gharsh11032000 */
+  .animated-button{position:relative; display:flex; justify-content:center; align-items:center; gap:4px; width:max-content; max-width:100%; margin:24px auto 0; padding:16px 36px; border:4px solid transparent; font-size:16px; background-color:inherit; border-radius:100px; font-weight:600; color:greenyellow; box-shadow:0 0 0 2px greenyellow; cursor:pointer; overflow:hidden; transition:all .6s cubic-bezier(.23,1,.32,1); font-family:inherit;}
+  .animated-button svg{position:absolute; width:24px; fill:greenyellow; z-index:9; transition:all .8s cubic-bezier(.23,1,.32,1);}
+  .animated-button .arr-1{right:16px;}
+  .animated-button .arr-2{left:-25%;}
+  .animated-button .circle{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:20px; height:20px; background-color:greenyellow; border-radius:50%; opacity:0; transition:all .8s cubic-bezier(.23,1,.32,1);}
+  .animated-button .text{position:relative; z-index:1; transform:translateX(-12px); transition:all .8s cubic-bezier(.23,1,.32,1); white-space:nowrap;}
+  .animated-button:hover{box-shadow:0 0 0 12px transparent; color:#212121; border-radius:12px;}
+  .animated-button:hover .arr-1{right:-25%;}
+  .animated-button:hover .arr-2{left:16px;}
+  .animated-button:hover .text{transform:translateX(12px);}
+  .animated-button:hover svg{fill:#212121;}
+  .animated-button:active{scale:.95; box-shadow:0 0 0 4px greenyellow;}
+  .animated-button:hover .circle{width:220px; height:220px; opacity:1;}
+  .animated-button:focus-visible{outline:3px solid var(--orange-deep); outline-offset:6px;}
+  @media (prefers-reduced-motion:reduce){.animated-button,.animated-button svg,.animated-button .circle,.animated-button .text{transition:none;}}
+
   /* ---------- Toast ---------- */
   .cs-toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);}
   .cs-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
@@ -190,7 +207,12 @@
     <div class="kicker">CARROUSEL STUDIO · ACCÈS GRATUIT</div>
     <h1>Crée et publie, sans paiement.</h1>
     <p>Inscris-toi avec ton adresse e-mail et un mot de passe pour accéder aux outils de création. Aucun paiement ni code d’activation requis.</p>
-    <button type="button" class="cta solid" onclick="handleAuthClick()">Créer mon compte / Me connecter</button>
+    <button type="button" class="animated-button" onclick="handleAuthClick()" aria-haspopup="dialog">
+      <svg class="arr-1" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.1716 10.9999 10.8076 5.6359l1.4142-1.4142L20 11.9999l-7.7782 7.7781-1.4142-1.4142 5.364-5.364H4v-2z"></path></svg>
+      <span class="text">Créer mon compte</span>
+      <span class="circle" aria-hidden="true"></span>
+      <svg class="arr-2" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.1716 10.9999 10.8076 5.6359l1.4142-1.4142L20 11.9999l-7.7782 7.7781-1.4142-1.4142 5.364-5.364H4v-2z"></path></svg>
+    </button>
     <p class="access-note">Compte créé automatiquement si c’est ta première visite. Mot de passe de 6 caractères minimum.</p>
   </div>
   <div class="grid access-grid">
