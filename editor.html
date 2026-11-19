@@ -306,7 +306,7 @@ function renderPlanMenu(loggedIn){
         ${planMenuRowHTML('Visuels', summary.visuels)}
         ${planMenuRowHTML('Carrousels', summary.carrousels)}
         ${planMenuRowHTML('PowerPoint', summary.ppt)}
-        <a class="plan-menu-link" href="accueil.html">Gérer mon forfait →</a>
+        <a class="plan-menu-link" href="accueil.html">Accès gratuit →</a>
       </div>
     </div>`;
 }
@@ -314,8 +314,8 @@ function renderPlanMenu(loggedIn){
   <div id="quota-lock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,8,0.92);color:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:Inter,system-ui,sans-serif;">
     <div style="max-width:420px;">
       <h2 style="margin:0 0 12px;font-size:22px;">L’export PowerPoint n’est pas inclus dans ton forfait</h2>
-      <p id="quota-lock-message" style="margin:0 0 24px;opacity:.85;line-height:1.5;">Le forfait Freemium n’inclut pas l’accès à l’éditeur de présentations. Passe au forfait Premium ou Premium+ pour l’utiliser. Pour ton carrousel gratuit, rends-toi sur Carrousel Studio.</p>
-      <a href="accueil.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Voir les forfaits</a>
+      <p id="quota-lock-message" style="margin:0 0 24px;opacity:.85;line-height:1.5;">Cette fonctionnalité est temporairement indisponible pour ton compte. Réessaie plus tard ou retourne à Carrousel Studio.</p>
+      <a href="accueil.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Retour à Carrousel Studio</a>
     </div>
   </div>
   <div class="app-shell">
@@ -677,7 +677,7 @@ function renderPlanMenu(loggedIn){
       }
       async function init() { bindInputs(); try { state.db = await openDb(); const saved = await dbGet(state.db, 'current'); state.presentation = saved ? normalizePresentation(saved) : samplePresentation(); setStatus(saved ? 'Enregistré localement' : 'Exemple prêt', 'success'); render(); if (!saved) await save(); } catch (error) { state.presentation = samplePresentation(); setStatus('Mode temporaire', 'error'); render(); toast('IndexedDB est indisponible. Utilisation temporaire en mémoire.', true); } }
       init();
-      // Verrouille l'éditeur de présentations pour le forfait Freemium (pas d'accès PowerPoint)
+      // Applique les droits du compte à l’éditeur de présentations
       (function enforcePowerPointAccess() {
         const check = CSQuota.canExportPowerPoint();
         if (!check.allowed) showQuotaLock(check.message);

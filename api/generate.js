@@ -26,35 +26,6 @@ function isRateLimited(ip) {
   return entry.count > MAX_REQUESTS_PER_WINDOW;
 }
 
-// --- Quota "carrousel gratuit" (forfait Freemium) ---------------------------
-// Tant qu'il n'existe pas de vrais comptes/paiement, on ne peut pas savoir
-// avec certitude qui est un utilisateur payant : on applique donc un garde-fou
-// serveur par adresse IP — 1 génération IA de carrousel offerte par mois glissant.
-//
-// ⚠️ Limites connues de cette approche (à corriger le jour où il y aura de
-// vrais comptes) :
-//   - Stockage en mémoire : remis à zéro à chaque redémarrage à froid de la
-//     fonction Vercel (peut arriver plusieurs fois par jour sous faible trafic).
-//   - Basé sur l'IP : plusieurs personnes derrière la même IP (bureau, box
-//     familiale, 4G partagée) partageront le même quota, et une personne qui
-//     change de réseau peut regénérer une IA "gratuite".
-//   - Ne bloque QUE la génération automatique via l'IA. La création manuelle
-//     d'un carrousel dans l'éditeur reste gérée côté client par quota.js.
-// C'est donc un filet de sécurité en plus du contrôle client, pas un
-// remplacement d'un vrai système d'abonnement.
-const freeCarrouselLog = new Map();
-const FREE_CARROUSEL_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
-
-function hasUsedFreeCarrousel(ip) {
-  const last = freeCarrouselLog.get(ip);
-  if (!last) return false;
-  return Date.now() - last < FREE_CARROUSEL_WINDOW_MS;
-}
-
-function markFreeCarrouselUsed(ip) {
-  freeCarrouselLog.set(ip, Date.now());
-}
-
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -116,15 +87,6 @@ export default async function handler(req, res) {
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
   if (isRateLimited(ip)) {
     res.status(429).json({ error: 'Trop de générations. Réessaie dans quelques minutes.' });
-    return;
-  }
-
-  // Garde-fou serveur pour le forfait Freemium : 1 génération IA de carrousel
-  // offerte par mois glissant, par IP (voir explications au-dessus de freeCarrouselLog).
-  if (hasUsedFreeCarrousel(ip)) {
-    res.status(403).json({
-      error: 'Ton carrousel gratuit du mois généré par IA a déjà été utilisé. Réessaie le mois prochain, ou passe à un forfait payant pour en générer d\'autres dès maintenant.',
-    });
     return;
   }
 
@@ -197,7 +159,6 @@ export default async function handler(req, res) {
 
     // On normalise la réponse au même format que celui attendu par le site
     // (structure "content" façon Anthropic), pour ne rien changer côté client.
-    markFreeCarrouselUsed(ip);
     res.status(200).json({
       content: [{ type: 'text', text }],
     });

@@ -187,97 +187,18 @@
 
 <div class="wrap">
   <div class="hero">
-    <div class="kicker">ACCUEIL</div>
-    <h1>Un palier pour chaque rythme de création</h1>
-    <p>Carrousels, visuels et présentations générés en quelques secondes. Commence gratuitement, monte en gamme quand ton usage grandit.</p>
-
-    <div class="billing-toggle">
-      <span>Mensuel</span>
-      <div class="switch" id="billing-switch" onclick="toggleBilling(this)"></div>
-      <span>Annuel</span>
-      <span class="save-tag">-20%</span>
-    </div>
+    <div class="kicker">CARROUSEL STUDIO · ACCÈS GRATUIT</div>
+    <h1>Crée et publie, sans paiement.</h1>
+    <p>Inscris-toi avec ton adresse e-mail et un mot de passe pour accéder aux outils de création. Aucun paiement ni code d’activation requis.</p>
+    <button type="button" class="cta solid" onclick="handleAuthClick()">Créer mon compte / Me connecter</button>
+    <p class="access-note">Compte créé automatiquement si c’est ta première visite. Mot de passe de 6 caractères minimum.</p>
   </div>
-
-  <div class="grid">
-
-    <!-- GENESIS -->
-    <div class="card" data-plan="genesis">
-      <div class="tier-label"><span>GENESIS</span></div>
-      <div class="tier-name">Freemium</div>
-      <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
-      <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
-      <div class="price-note">Aucune carte bancaire requise — teste-le directement dans le simulateur ci-dessous</div>
-      <a href="carrousel.html" class="cta ghost">Commencer gratuitement</a>
-      <ul class="features">
-        <li>1 visuel par semaine sur Visuel Studio</li>
-        <li>1 carrousel offert par mois</li>
-        <li>Export PDF standard</li>
-        <li class="muted">Pas d'accès PowerPoint</li>
-      </ul>
-    </div>
-
-    <!-- NODE -->
-    <div class="card" data-plan="node">
-      <div class="tier-label"><span>NODE</span></div>
-      <div class="tier-name">Basique</div>
-      <div class="tier-tagline">Pour publier du contenu chaque semaine, sans y penser.</div>
-      <div class="price">
-        <span class="amount price-monthly">1 700</span><span class="period">FCFA / mois</span>
-        <span class="price-usd">(~3 $)</span>
-      </div>
-      <div class="price-note">soit ~1 350 FCFA/mois en annuel (~2,4 $)</div>
-      <button type="button" class="cta ghost" data-select="node">Choisir Basique</button>
-      <ul class="features">
-        <li>1 carrousel par semaine</li>
-        <li>1 visuel par jour</li>
-        <li>Export HD, sans filigrane</li>
-        <li class="muted">Pas d'accès PowerPoint</li>
-      </ul>
-    </div>
-
-    <!-- VALIDATOR (featured) -->
-    <div class="card featured" data-plan="validator">
-      <div class="badge">Le plus choisi</div>
-      <div class="tier-label"><span>VALIDATOR</span></div>
-      <div class="tier-name">Premium</div>
-      <div class="tier-tagline">Pour les créateurs actifs qui ne veulent plus compter.</div>
-      <div class="price">
-        <span class="amount price-monthly">4 500</span><span class="period">FCFA / mois</span>
-        <span class="price-usd">(~8 $)</span>
-      </div>
-      <div class="price-note">soit ~3 600 FCFA/mois en annuel (~6,4 $)</div>
-      <button type="button" class="cta solid" data-select="validator">Passer en Premium</button>
-      <ul class="features">
-        <li>3 carrousels par semaine</li>
-        <li>Visuel Studio illimité</li>
-        <li>Personnalisation de marque (logo, couleurs)</li>
-        <li>1 présentation PowerPoint offerte / mois</li>
-      </ul>
-    </div>
-
-    <!-- SATOSHI -->
-    <div class="card top" data-plan="satoshi">
-      <div class="tier-label"><span>SATOSHI</span></div>
-      <div class="tier-name">Premium+</div>
-      <div class="tier-tagline">Pour les consultants et agences qui produisent en volume.</div>
-      <div class="price">
-        <span class="amount price-monthly">8 500</span><span class="period">FCFA / mois</span>
-        <span class="price-usd">(~15 $)</span>
-      </div>
-      <div class="price-note">soit ~6 800 FCFA/mois en annuel (~12 $)</div>
-      <button type="button" class="cta ghost" data-select="satoshi">Passer en Premium+</button>
-      <ul class="features">
-        <li>5 carrousels par semaine</li>
-        <li>Visuel Studio illimité</li>
-        <li>2 présentations PowerPoint par semaine</li>
-        <li>Accès prioritaire aux nouvelles fonctionnalités</li>
-      </ul>
-    </div>
-
+  <div class="grid access-grid">
+    <article class="card"><div class="tier-label"><span>01 · CARROUSELS</span></div><div class="tier-name">Générateur LinkedIn</div><div class="tier-tagline">Transforme tes idées en carrousels prêts à publier.</div><a href="carrousel.html" class="cta ghost">Ouvrir Carrousel Studio</a></article>
+    <article class="card"><div class="tier-label"><span>02 · VISUELS</span></div><div class="tier-name">Visuel Studio</div><div class="tier-tagline">Compose des visuels éditables pour tes publications.</div><a href="visuel.html" class="cta ghost">Créer un visuel</a></article>
+    <article class="card"><div class="tier-label"><span>03 · PRÉSENTATIONS</span></div><div class="tier-name">Éditeur de présentations</div><div class="tier-tagline">Crée, modifie et exporte tes slides depuis ton navigateur.</div><a href="editor.html" class="cta ghost">Ouvrir l’éditeur</a></article>
   </div>
-
-  <div class="footnote">Besoin de plus de volume pour ton équipe ou ton agence ? <a href="#">Contacte-nous</a>.</div>
+  <div class="footnote">Accès par compte gratuit · E-mail et mot de passe seulement · Pas de carte bancaire.</div>
 </div>
 
 <div class="auth-modal-overlay" id="auth-modal-overlay" onclick="if(event.target === this) closeAuthModal();">
@@ -285,153 +206,22 @@
     <div class="auth-modal-glow"></div>
     <button type="button" class="auth-modal-close" onclick="closeAuthModal()" aria-label="Fermer">✕</button>
     <div class="auth-modal-icon">✨</div>
-    <h2>Connexion ou inscription</h2>
-    <p class="hint">Entre ton email et un mot de passe. Pas encore de compte ? Il sera créé automatiquement.</p>
+    <h2>Accès gratuit à la plateforme</h2>
+    <p class="hint">Entre ton adresse e-mail et choisis un mot de passe. Ton compte sera créé automatiquement si besoin, sans paiement.</p>
     <div class="field">
       <label for="auth-modal-email">Email</label>
-      <input type="email" id="auth-modal-email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter') document.getElementById('auth-modal-password').focus();">
+      <input type="email" id="auth-modal-email" placeholder="toi@exemple.com" autocomplete="email" required onkeydown="if(event.key==='Enter') document.getElementById('auth-modal-password').focus();">
     </div>
     <div class="field">
-      <label for="auth-modal-password">Mot de passe (6 caractères min.)</label>
-      <input type="password" id="auth-modal-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAuthModal();">
+      <label for="auth-modal-password">Mot de passe (6 caractères minimum)</label>
+      <input type="password" id="auth-modal-password" placeholder="Au moins 6 caractères" autocomplete="new-password" minlength="6" required onkeydown="if(event.key==='Enter') submitAuthModal();">
     </div>
     <div class="auth-modal-error" id="auth-modal-error"></div>
-    <button type="button" class="auth-modal-submit" id="auth-modal-submit" onclick="submitAuthModal()">Continuer</button>
+    <button type="button" class="auth-modal-submit" id="auth-modal-submit" onclick="submitAuthModal()">Continuer gratuitement</button>
   </div>
 </div>
 
 <script>
-  /* ---------- Billing toggle ---------- */
-  // FCFA (mensuel / annuel équivalent) et équivalent USD affiché entre parenthèses
-  const monthly = {node:1700, validator:4500, satoshi:8500};
-  const annual  = {node:1350, validator:3600, satoshi:6800};
-  const monthlyUSD = {node:3, validator:8, satoshi:15};
-  const annualUSD  = {node:'2,4', validator:'6,4', satoshi:'12'};
-
-  function toggleBilling(el){
-    const isOn = el.classList.toggle('on');
-    document.querySelectorAll('.card').forEach(card => {
-      const key = card.getAttribute('data-plan');
-      if(!(key in monthly)) return;
-
-      const amountEl = card.querySelector('.price-monthly');
-      if(amountEl) amountEl.textContent = (isOn ? annual[key] : monthly[key]).toLocaleString('fr-FR');
-
-      const usdEl = card.querySelector('.price-usd');
-      if(usdEl) usdEl.textContent = `(~${isOn ? annualUSD[key] : monthlyUSD[key]} $)`;
-
-      const note = card.querySelector('.price-note');
-      if(note) note.style.opacity = isOn ? '0.35' : '1';
-    });
-  }
-
-  /* ---------- Plan definitions: mirrors exactly what each card's bullet list says ---------- */
-  const PLANS = {
-    genesis: {
-      label: 'GENESIS', name: 'Freemium', ctaText: 'Commencer gratuitement',
-      visuels:   { limit: 1, period: 'par semaine' },
-      carrousels:{ limit: 1, period: 'offert par mois' },
-      ppt:       { limit: 0, period: null },
-      exportHD: false,
-      brand: false
-    },
-    node: {
-      label: 'NODE', name: 'Basique', ctaText: 'Choisir Basique',
-      visuels:   { limit: 1, period: 'par jour' },
-      carrousels:{ limit: 1, period: 'par semaine' },
-      ppt:       { limit: 0, period: null },
-      exportHD: true,
-      brand: false
-    },
-    validator: {
-      label: 'VALIDATOR', name: 'Premium', ctaText: 'Passer en Premium',
-      visuels:   { limit: Infinity, period: 'illimité' },
-      carrousels:{ limit: 3, period: 'par semaine' },
-      ppt:       { limit: 1, period: 'par mois' },
-      exportHD: true,
-      brand: true
-    },
-    satoshi: {
-      label: 'SATOSHI', name: 'Premium+', ctaText: 'Passer en Premium+',
-      visuels:   { limit: Infinity, period: 'illimité' },
-      carrousels:{ limit: 5, period: 'par semaine' },
-      ppt:       { limit: 2, period: 'par semaine' },
-      exportHD: true,
-      brand: true
-    }
-  };
-
-  // Clé localStorage partagée avec carrousel.html pour que le forfait choisi soit repris sur l'outil.
-  const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
-
-  let currentPlan = null;
-
-  /* ---------- Plan selection ---------- */
-  document.querySelectorAll('[data-select]').forEach(btn => {
-    btn.addEventListener('click', () => selectPlan(btn.getAttribute('data-select')));
-  });
-
-  function applyPlanSelection(planId){
-    currentPlan = planId;
-
-    document.querySelectorAll('.card').forEach(card => {
-      const id = card.getAttribute('data-plan');
-      const btn = card.querySelector('[data-select]');
-      const isActive = id === planId;
-      card.classList.toggle('is-active', isActive);
-      if(btn){
-        btn.classList.toggle('is-selected', isActive);
-        btn.textContent = isActive ? '✓ Forfait actif' : PLANS[id].ctaText;
-      }
-      let pill = card.querySelector('.active-pill');
-      if(isActive && !pill){
-        pill = document.createElement('span');
-        pill.className = 'active-pill';
-        pill.textContent = 'Actif';
-        card.querySelector('.tier-label').appendChild(pill);
-      } else if(!isActive && pill){
-        pill.remove();
-      }
-    });
-  }
-
-  async function selectPlan(planId){
-    if(!csUser){
-      showToast('Connecte-toi d’abord pour choisir un forfait.');
-      await handleAuthClick();
-      if(!csUser) return; // connexion annulée ou échouée
-    }
-
-    const alreadyOwned = csUserData && csUserData.planId === planId;
-
-    if(planId === 'genesis'){
-      if(!alreadyOwned){
-        applyPlanSelection(planId);
-        localStorage.setItem(PLAN_STORAGE_KEY, planId);
-        window.CS.setUserPlan(csUser.uid, planId, 'self').catch(err => console.error(err));
-      }
-      window.location.href = 'carrousel.html';
-      return;
-    }
-
-    if(alreadyOwned){
-      // Ce forfait est déjà actif sur ce compte : direction l'outil, pas l'activation.
-      window.location.href = 'carrousel.html';
-      return;
-    }
-
-    // Forfait payant pas encore acquis : direction la fiche d'activation (contact + code WhatsApp).
-    window.location.href = `activation.html?plan=${encodeURIComponent(planId)}`;
-  }
-
-  // Reprend automatiquement le forfait déjà choisi (ici ou sur l'outil carrousel), sans faire défiler la page.
-  (function restoreStoredPlan(){
-    const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
-    if(storedPlan && PLANS[storedPlan]){
-      applyPlanSelection(storedPlan);
-    }
-  })();
-
   function showToast(msg){
     const t = document.getElementById('cs-toast');
     if(!t) return;
@@ -443,7 +233,6 @@
 
   /* ---------- Auth (Firebase) ---------- */
   let csUser = null;
-  let csUserData = null;
   let csUnsubscribeUserDoc = null;
 
   function escapeHtml(str){
@@ -471,6 +260,7 @@
   });
 
   function handleAuthClick(){
+    if(csUser){ window.location.href = 'carrousel.html'; return Promise.resolve(); }
     return new Promise((resolve) => {
       _authModalResolve = resolve;
       openAuthModal();
@@ -503,6 +293,14 @@
       errorEl.textContent = 'Renseigne ton email et ton mot de passe.';
       return;
     }
+    if(!document.getElementById('auth-modal-email').checkValidity()){
+      errorEl.textContent = 'Entre une adresse e-mail valide.';
+      return;
+    }
+    if(password.length < 6){
+      errorEl.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = 'Connexion...';
@@ -510,7 +308,7 @@
       try{
         await window.CS.signInWithPassword(email, password);
       }catch(err){
-        if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+        if(err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'){
           try{
             await window.CS.signUpWithPassword(email, password);
           }catch(signUpErr){
@@ -523,15 +321,17 @@
           throw err;
         }
       }
-      showToast('Connecté ✓');
+      await window.CS.ensureUserDoc(window.CS.auth.currentUser);
+      showToast('Compte prêt — ouverture de la plateforme…');
       document.getElementById('auth-modal-overlay').classList.remove('is-open');
       if(_authModalResolve){ _authModalResolve(); _authModalResolve = null; }
+      setTimeout(() => { window.location.href = 'carrousel.html'; }, 450);
     }catch(err){
       console.error(err);
       errorEl.textContent = err.message || "Connexion impossible, réessaie.";
     }finally{
       btn.disabled = false;
-      btn.textContent = 'Continuer';
+      btn.textContent = 'Continuer gratuitement';
     }
   }
 
@@ -580,15 +380,9 @@
       if(user){
         await window.CS.ensureUserDoc(user);
         csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
-          csUserData = data;
           window.csCurrentPlanId = data.planId || 'genesis';
-          if(data.planId && PLANS[data.planId]){
-            localStorage.setItem(PLAN_STORAGE_KEY, data.planId);
-            applyPlanSelection(data.planId);
-          }
         });
       }else{
-        csUserData = null;
         window.csCurrentPlanId = 'genesis';
       }
       renderAuthWidget();
