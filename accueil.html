@@ -69,7 +69,20 @@
   .access-grid .card:hover::before{transform:translate(5px,5px) translateZ(-1px) rotate(1deg); opacity:1;}
   .access-grid .card:hover::after{transform:translateX(560%) rotate(18deg);}
   .access-grid .card:nth-child(2):hover{transform:perspective(900px) translateY(-7px) rotateX(2deg) rotateY(1.5deg);}
-  @media (prefers-reduced-motion:reduce){.access-grid .card,.access-grid .card::before,.access-grid .card::after{transition:none;} .access-grid .card:hover,.access-grid .card:nth-child(2):hover{transform:none;}}
+  @keyframes accessCardOrbit{
+    0%,100%{z-index:3; transform:translate(-50%,-50%) scale(1) rotateY(0);}
+    33.33%{z-index:1; transform:translate(calc(-50% - var(--orbit-distance)),-50%) scale(.88) rotateY(9deg);}
+    66.66%{z-index:1; transform:translate(calc(-50% + var(--orbit-distance)),-50%) scale(.88) rotateY(-9deg);}
+  }
+  @media (min-width:1041px){
+    .access-grid{display:block; position:relative; width:100%; max-width:980px; height:270px; margin:48px auto 0; perspective:1100px;}
+    .access-grid .card{position:absolute; top:50%; left:50%; width:clamp(250px,27vw,300px); height:225px; margin:0; --orbit-distance:clamp(270px,29vw,340px); animation:accessCardOrbit 9s cubic-bezier(.75,0,0,1.01) infinite;}
+    .access-grid .card:nth-child(2){animation-delay:-3s;}
+    .access-grid .card:nth-child(3){animation-delay:-6s;}
+    .access-grid:hover .card,.access-grid:focus-within .card{animation-play-state:paused;}
+    .access-grid .card:hover{transform:translateY(-5px);}
+  }
+  @media (prefers-reduced-motion:reduce){.access-grid .card,.access-grid .card::before,.access-grid .card::after{transition:none;} .access-grid .card:hover,.access-grid .card:nth-child(2):hover{transform:none;} .access-grid .card{animation:none !important;} @media (min-width:1041px){.access-grid .card{position:relative; inset:auto; width:auto; height:auto; transform:none; margin:0;} .access-grid{display:grid; height:auto; perspective:none;}}}
 
   .card{
     background:var(--glass);
